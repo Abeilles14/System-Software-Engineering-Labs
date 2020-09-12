@@ -1,5 +1,6 @@
 # Prerequisites
 *.d
+/.vs
 
 # Compiled Object files
 *.slo
@@ -30,3 +31,19 @@
 *.exe
 *.out
 *.app
+
+# Other
+*.suo
+*.db
+*.ipch
+*.ilk
+*.pdb
+*.sln
+*.log
+*.tlog
+*.lastbuildstate
+*.idb
+*.vcxproj
+*.filters
+*.user
+*.opendb
