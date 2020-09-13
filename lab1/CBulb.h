@@ -4,11 +4,25 @@
 #define   __CBulb__
 
 class CBulb {
-	int state;		//enables state of bulb
 
 public:
+	CBulb(int watts_value);
+	CBulb();
+	~CBulb();
+
 	void printstate();
-	void setstate(int value);
+	//void setstate(int value);
+	void setwatts(int watts_value);
+	void on();
+	void off();
+
+	int getPower();
+	int getstate();
+
+private:
+	int state;		//enables state of bulb
+	int watts;
+
 };
 
 #endif 
