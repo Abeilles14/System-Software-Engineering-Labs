@@ -20,7 +20,7 @@ CBulb::~CBulb() {
 	cout << "CBulb destructor called\n";
 }
 
-void CBulb::printstate() {
+void CBulb::print() {
 	cout << "printing lightbulb state: " << state <<"\n";
 }
 

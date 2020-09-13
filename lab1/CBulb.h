@@ -10,7 +10,7 @@ public:
 	CBulb();
 	~CBulb();
 
-	void printstate();
+	void print();
 	//void setstate(int value);
 	void setwatts(int watts_value);
 	void on();
