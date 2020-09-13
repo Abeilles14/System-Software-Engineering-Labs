@@ -6,7 +6,8 @@ using namespace std;
 
 CSwitch::CSwitch() {
 	state = 0;
-	cout << "CSwtich Constructor called, swtich off\n";
+
+	cout << "CSwtich Constructor called, switch off\n";
 }
 
 CSwitch::~CSwitch() {
@@ -22,6 +23,8 @@ void CSwitch::turnoff() {
 }
 
 int CSwitch::getState() {
+	cout << "switch state: " << state << "\n";
+
 	return state;
 }
 

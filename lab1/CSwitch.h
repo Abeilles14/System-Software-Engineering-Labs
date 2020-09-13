@@ -11,8 +11,9 @@ public:
 
 	void turnon();
 	void turnoff();
-	int getState();
 	void print();
+
+	int getState();
 
 private:
 	int state;

@@ -25,13 +25,15 @@ void CBulb::print() {
 }
 
 void CBulb::on() {
-	cout << "on\n";
 	state = 1;
+
+	cout << "on\n";
 }
 
 void CBulb::off() {
-	cout << "off\n";
 	state = 0;
+
+	cout << "off\n";
 }
 
 void CBulb::setwatts(int watts_value) {
@@ -39,12 +41,14 @@ void CBulb::setwatts(int watts_value) {
 }
 
 int CBulb::getstate() {
-	cout << "state: " << state << "\n";
+	cout << "bulb state: " << state << "\n";
+
 	return state;
 }
 
 int CBulb::getPower() {
-	cout << "watts: " << watts << "\n";
+	cout << "bulb watts: " << watts << "\n";
+
 	return watts;
 }
 
