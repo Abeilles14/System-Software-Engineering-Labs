@@ -9,6 +9,7 @@ private:
 public:
 	// Constructors
 	CSwitch();
+	CSwitch(int initState);
 	~CSwitch();
 
 	// Accessors

@@ -7,8 +7,8 @@
 class CLamp3Bulb {
 
 private:
-	CSwitch lightswitch;
-	CBulb* lightbulb = new CBulb[3];
+	CSwitch* mySwitch;
+	CBulb* myBulbs[3]; 
 
 public:
 	// Constructors
@@ -23,6 +23,7 @@ public:
 	// Mutators
 	void LampOn();
 	void LampOff();
+	CBulb* exchange(CBulb* newBulb, int bulbNumber);
 };
 
 #endif

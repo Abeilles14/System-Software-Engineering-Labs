@@ -45,6 +45,13 @@ int main() {
 	lamp.getState();
 	lamp.getPower();
 
+	// lamp bulb exchange
+	std::cout << "\nLAMP BULB EXCHANGE TESTS:\n";
+	CBulb* bulb1 = new CBulb(60);
+	bulb1 = lamp.exchange(bulb1, 0);
+	lamp.getPower();
+	delete bulb1;
+
 	std::cout << "\nEND OF TESTS\n";
 
 	return 0;

@@ -11,6 +11,12 @@ CSwitch::CSwitch() {
 	cout << "CSwtich Constructor called, switch off\n";
 }
 
+CSwitch::CSwitch(int initState) {
+	state = initState;
+
+	cout << "CSwtich Constructor called, switch state: " << state << "\n";
+}
+
 CSwitch::~CSwitch() {
 	cout << "CSwitch destructor called\n";
 }

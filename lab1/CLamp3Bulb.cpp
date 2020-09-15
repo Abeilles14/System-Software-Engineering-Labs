@@ -6,26 +6,38 @@ using namespace std;
 
 // Constructors
 CLamp3Bulb::CLamp3Bulb(int w1, int w2, int w3) {
-	lightbulb[0].setwatts(w1);
-	lightbulb[1].setwatts(w2);
-	lightbulb[2].setwatts(w3);
+	
+	myBulbs[0] = new CBulb(w1);
+	myBulbs[1] = new CBulb(w2);
+	myBulbs[2] = new CBulb(w3);
 
-	lightbulb[0].off();
-	lightbulb[1].off();
-	lightbulb[2].off();
+	myBulbs[0]->setwatts(w1);
+	myBulbs[1]->setwatts(w2);
+	myBulbs[2]->setwatts(w3);
 
-	lightswitch.turnoff();
+	myBulbs[0]->off();
+	myBulbs[1]->off();
+	myBulbs[2]->off();
+
+	mySwitch = new CSwitch(0);
+	mySwitch->turnoff();
 
 	cout << "CLamp3Bulb Constructor called, switch and lightbulb off\n";
 }
 
 CLamp3Bulb::~CLamp3Bulb() {
+	delete myBulbs[0];
+	delete myBulbs[1];
+	delete myBulbs[2];
+
+	delete mySwitch;
+
 	cout << "CLamp3Bulb destructor called\n";
 }
 
 // Accessors
 int CLamp3Bulb::getState() {
-	int state = lightswitch.getState();
+	int state = mySwitch->getState();
 
 	cout << "Lamp state: " << state << "\n";
 
@@ -33,7 +45,7 @@ int CLamp3Bulb::getState() {
 }
 
 int CLamp3Bulb::getPower() {
-	int power_consumed = lightbulb[0].getPower() + lightbulb[1].getPower() + lightbulb[2].getPower();
+	int power_consumed = myBulbs[0]->getPower() + myBulbs[1]->getPower() + myBulbs[2]->getPower();
 
 	cout << "Power consumed: " << power_consumed << "\n";
 
@@ -41,24 +53,33 @@ int CLamp3Bulb::getPower() {
 }
 
 void CLamp3Bulb::print() {
-	int state = lightswitch.getState();
+	int state = mySwitch->getState();
 
 	cout << "Printing lamp state: " << state << "\n";
 }
 
 // Mutators
 void CLamp3Bulb::LampOn() {
-	lightbulb[0].on();
-	lightbulb[1].on();
-	lightbulb[2].on();
+	myBulbs[0]->on();
+	myBulbs[1]->on();
+	myBulbs[2]->on();
 
-	lightswitch.turnon();
+	mySwitch->turnon();
 }
 
 void CLamp3Bulb::LampOff() {
-	lightbulb[0].off();
-	lightbulb[1].off();
-	lightbulb[2].off();
+	myBulbs[0]->off();
+	myBulbs[1]->off();
+	myBulbs[2]->off();
 
-	lightswitch.turnoff();
+	mySwitch->turnoff();
+}
+
+CBulb* CLamp3Bulb::exchange(CBulb* newBulb, int bulbNumber) {
+	CBulb* tempBulbPtr;
+
+	tempBulbPtr = myBulbs[bulbNumber];
+	myBulbs[bulbNumber] = newBulb;
+
+	return tempBulbPtr;
 }
