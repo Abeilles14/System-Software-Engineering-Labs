@@ -52,6 +52,14 @@ int main() {
 	lamp.getPower();
 	delete bulb1;
 
+	// lamp copy consctructor
+	std::cout << "\nLAMP COPY TESTS:\n";
+	CLamp3Bulb copiedLamp(lamp);
+	copiedLamp.print();
+	copiedLamp.getState();
+	copiedLamp.getPower();
+
+
 	std::cout << "\nEND OF TESTS\n";
 
 	return 0;

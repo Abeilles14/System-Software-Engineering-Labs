@@ -25,6 +25,21 @@ CLamp3Bulb::CLamp3Bulb(int w1, int w2, int w3) {
 	cout << "CLamp3Bulb Constructor called, switch and lightbulb off\n";
 }
 
+CLamp3Bulb::CLamp3Bulb(const CLamp3Bulb& LampToCopy)
+{
+	myBulbs[0] = new CBulb();
+	myBulbs[1] = new CBulb();
+	myBulbs[2] = new CBulb();
+	mySwitch = new CSwitch();
+
+	*myBulbs[0] = *LampToCopy.myBulbs[0];
+	*myBulbs[1] = *LampToCopy.myBulbs[1];
+	*myBulbs[2] = *LampToCopy.myBulbs[2];
+
+	*mySwitch = *LampToCopy.mySwitch;
+}
+
+
 CLamp3Bulb::~CLamp3Bulb() {
 	delete myBulbs[0];
 	delete myBulbs[1];
