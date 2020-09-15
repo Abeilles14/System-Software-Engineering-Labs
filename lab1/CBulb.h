@@ -1,28 +1,28 @@
-#pragma once
-
 #ifndef   __CBulb__
 #define   __CBulb__
 
 class CBulb {
 
+private:
+	int state;		// Enables state of bulb
+	int watts;
+
 public:
+	// Constructors
 	CBulb(int watts_value);
 	CBulb();
 	~CBulb();
 
-	void print();
-	//void setstate(int value);
-	void setwatts(int watts_value);
-	void on();
-	void off();
-
+	// Accessors
 	int getPower();
 	int getstate();
+	void print();
 
-private:
-	int state;		//enables state of bulb
-	int watts;
-
+	// Mutators
+	// void setstate(int value);
+	void on();
+	void off();
+	void setwatts(int watts_value);
 };
 
 #endif 

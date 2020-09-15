@@ -1,22 +1,23 @@
-#pragma once
-
 #ifndef   __CSwitch__
 #define   __CSwitch__
 
 class CSwitch {
 
+private:
+	int state;
+
 public:
+	// Constructors
 	CSwitch();
 	~CSwitch();
 
-	void turnon();
-	void turnoff();
+	// Accessors
+	int getState();
 	void print();
 
-	int getState();
-
-private:
-	int state;
+	// Mutators
+	void turnon();
+	void turnoff();
 };
 
 #endif

@@ -4,6 +4,7 @@
 
 using namespace std;
 
+// Constructors
 CSwitch::CSwitch() {
 	state = 0;
 
@@ -14,20 +15,22 @@ CSwitch::~CSwitch() {
 	cout << "CSwitch destructor called\n";
 }
 
+// Accessors
+int CSwitch::getState() {
+	cout << "Switch state: " << state << "\n";
+
+	return state;
+}
+
+void CSwitch::print() {
+	cout << "Printing switch state: " << state << "\n";
+}
+
+// Mutators
 void CSwitch::turnon() {
 	state = 1;
 }
 
 void CSwitch::turnoff() {
 	state = 0;
-}
-
-int CSwitch::getState() {
-	cout << "switch state: " << state << "\n";
-
-	return state;
-}
-
-void CSwitch::print() {
-	cout << "printing switch state: " << state << "\n";
 }

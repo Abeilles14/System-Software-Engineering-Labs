@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <iostream>
 
 #include "CBulb.h"
 #include "CSwitch.h"
@@ -9,21 +10,26 @@ int main() {
 	CSwitch lightswitch;
 	CLamp3Bulb lamp(5, 10, 15);
 
+	std::cout << "\nBEGINNING OF TESTS\n";
+
 	// lightbulb
+	std::cout << "\nLIGHTBULB TESTS:\n";
 	lightbulb.print();
 	lightbulb.getPower();
 
 	lightbulb.off();
-	lightbulb.setwatts(0);
 	lightbulb.getstate();
 	lightbulb.getPower();
 
 	lightbulb.on();
-	lightbulb.setwatts(5);
 	lightbulb.getstate();
 	lightbulb.getPower();
 
-	//switch
+	lightbulb.setwatts(5);
+	lightbulb.getPower();
+
+	// switch
+	std::cout << "\nSWITCH TESTS:\n";
 	lightswitch.print();
 
 	lightswitch.turnon();
@@ -31,12 +37,15 @@ int main() {
 	lightswitch.print();
 	lightswitch.turnoff();
 
-	//lamp
+	// lamp
+	std::cout << "\nLAMP TESTS:\n";
 	lamp.LampOn();
 	lamp.print();
 	lamp.LampOff();
 	lamp.getState();
 	lamp.getPower();
+
+	std::cout << "\nEND OF TESTS\n";
 
 	return 0;
 }

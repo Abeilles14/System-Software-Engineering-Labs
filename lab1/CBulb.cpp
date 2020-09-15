@@ -4,6 +4,7 @@
 
 using namespace std;
 
+// Constructors
 CBulb::CBulb(int watts_value) {
 	state = 1;
 	watts = watts_value;
@@ -20,36 +21,41 @@ CBulb::~CBulb() {
 	cout << "CBulb destructor called\n";
 }
 
-void CBulb::print() {
-	cout << "printing lightbulb state: " << state <<"\n";
+// Accessors
+int CBulb::getPower() {
+	if (!state) {
+		cout << "Bulb watts: 0" << watts << "\n";
+		return 0;
+	}
+	cout << "Bulb watts: " << watts << "\n";
+	return watts;
 }
 
+int CBulb::getstate() {
+	cout << "Bulb state: " << state << "\n";
+
+	return state;
+}
+
+void CBulb::print() {
+	cout << "Printing lightbulb state: " << state <<"\n";
+}
+
+// Mutators
 void CBulb::on() {
 	state = 1;
 
-	cout << "on\n";
+	cout << "On\n";
 }
 
 void CBulb::off() {
 	state = 0;
 
-	cout << "off\n";
+	cout << "Off\n";
 }
 
 void CBulb::setwatts(int watts_value) {
 	watts = watts_value;
-}
-
-int CBulb::getstate() {
-	cout << "bulb state: " << state << "\n";
-
-	return state;
-}
-
-int CBulb::getPower() {
-	cout << "bulb watts: " << watts << "\n";
-
-	return watts;
 }
 
 /*void CBulb::setstate(int value) {
