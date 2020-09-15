@@ -4,6 +4,7 @@
 #include "CBulb.h"
 #include "CSwitch.h"
 #include "CLamp3Bulb.h"
+#include "CPullLamp.h"
 
 int main() {
 	CBulb lightbulb(20);
@@ -58,6 +59,18 @@ int main() {
 	copiedLamp.print();
 	copiedLamp.getState();
 	copiedLamp.getPower();
+
+	// pull lamp tests
+	CPullLamp 	pullLamp(100, 100, 100);	// create a Pull Lamp with 100 watt bulbs
+	std::cout << "\nPULL LAMP TESTS:\n";
+	pullLamp.toggle();
+	printf("Power of Lamp = %d\n", pullLamp.getPower());	// print power
+
+	pullLamp.toggle();
+	printf("Power of Lamp = %d\n", pullLamp.getPower());	// print power
+
+	pullLamp.toggle();
+	printf("Power of Lamp = %d\n", pullLamp.getPower());	// print power
 
 
 	std::cout << "\nEND OF TESTS\n";
