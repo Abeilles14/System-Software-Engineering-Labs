@@ -72,6 +72,9 @@ int main() {
 	pullLamp.toggle();
 	printf("Power of Lamp = %d\n", pullLamp.getPower());	// print power
 
+	// linked list tests
+	std::cout << "\nLINKED LISTS TESTS:\n";
+
 
 	std::cout << "\nEND OF TESTS\n";
 
