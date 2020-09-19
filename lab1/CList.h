@@ -1,5 +1,5 @@
-#ifndef __List__ 
-#define __List__
+#ifndef __CList__ 
+#define __CList__
 
 struct Node {
 	struct Node* next;

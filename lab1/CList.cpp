@@ -4,9 +4,9 @@
 using namespace std;
 
 CList::CList() {
-	ptr = NULL;		// set ptr to null
+	ptr = NULL;		// set ptr node to null
 
-	cout << "CList constructor calledc\n";
+	cout << "CList constructor called, list is null\n";
 }
 
 CList::~CList() {
@@ -16,26 +16,31 @@ CList::~CList() {
 void CList::insertNode(int new_data) {
 	Node* new_node = new Node();
 
-	if (ptr == NULL)		// if list is NULL
-	{
-		ptr = new_node;		// create new node
+	if (ptr == NULL) {
+		ptr = new_node;
+		ptr->data = new_data;
+		ptr->next = NULL;
+	}
+	else {
+		new_node->data = ptr->data;		// replace ptr by node
+		new_node->next = ptr->next;
+		ptr->data = new_data;			// place ptr at head with new data
+		ptr->next = new_node;
 	}
 
-	new_node->data = new_data;
-	new_node->next = ptr;
-	ptr = new_node;
-
-	cout << "Node added to CList\n";
+	cout << "Node data " << ptr->data << " added to CList\n";
 }
 
 void CList::deleteNode() {
-	Node* temp;
+	Node* temp = new Node();
 
 	if (ptr != NULL) {
-		temp = ptr->next;
-	}
+		cout << "CList node with data " << ptr->data << " deleted\n";
 
-	cout << "CList node deleted\n";
+		temp = ptr;
+		ptr = ptr->next;	// move ptr down
+		temp = NULL;		// delete node
+	}
 }
 
 int CList::getData(int index) {

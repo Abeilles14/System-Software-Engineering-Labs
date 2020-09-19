@@ -5,16 +5,16 @@
 #include "CSwitch.h"
 #include "CLamp3Bulb.h"
 #include "CPullLamp.h"
+#include "CList.h"
 
 int main() {
-	CBulb lightbulb(20);
-	CSwitch lightswitch;
-	CLamp3Bulb lamp(5, 10, 15);
 
 	std::cout << "\nBEGINNING OF TESTS\n";
 
 	// lightbulb
 	std::cout << "\nLIGHTBULB TESTS:\n";
+	CBulb lightbulb(20);
+
 	lightbulb.print();
 	lightbulb.getPower();
 
@@ -31,8 +31,9 @@ int main() {
 
 	// switch
 	std::cout << "\nSWITCH TESTS:\n";
-	lightswitch.print();
+	CSwitch lightswitch;
 
+	lightswitch.print();
 	lightswitch.turnon();
 	lightswitch.getState();
 	lightswitch.print();
@@ -40,6 +41,8 @@ int main() {
 
 	// lamp
 	std::cout << "\nLAMP TESTS:\n";
+	CLamp3Bulb lamp(5, 10, 15);
+
 	lamp.LampOn();
 	lamp.print();
 	lamp.LampOff();
@@ -49,6 +52,7 @@ int main() {
 	// lamp bulb exchange
 	std::cout << "\nLAMP BULB EXCHANGE TESTS:\n";
 	CBulb* bulb1 = new CBulb(60);
+
 	bulb1 = lamp.exchange(bulb1, 0);
 	lamp.getPower();
 	delete bulb1;
@@ -56,13 +60,15 @@ int main() {
 	// lamp copy consctructor
 	std::cout << "\nLAMP COPY TESTS:\n";
 	CLamp3Bulb copiedLamp(lamp);
+
 	copiedLamp.print();
 	copiedLamp.getState();
 	copiedLamp.getPower();
 
 	// pull lamp tests
-	CPullLamp 	pullLamp(100, 100, 100);	// create a Pull Lamp with 100 watt bulbs
 	std::cout << "\nPULL LAMP TESTS:\n";
+	CPullLamp pullLamp(100, 100, 100);	// create a Pull Lamp with 100 watt bulbs
+
 	pullLamp.toggle();
 	printf("Power of Lamp = %d\n", pullLamp.getPower());	// print power
 
@@ -74,7 +80,15 @@ int main() {
 
 	// linked list tests
 	std::cout << "\nLINKED LISTS TESTS:\n";
+	CList list;
 
+	list.insertNode(10);
+	list.insertNode(20);
+	list.insertNode(30);
+
+	list.getData(0);
+	list.deleteNode();
+	list.getData(0);
 
 	std::cout << "\nEND OF TESTS\n";
 
