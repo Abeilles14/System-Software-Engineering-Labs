@@ -6,16 +6,16 @@ struct Node {
 	int data;
 };
 
-class CList {
+template <class T> class CList {
 private:
 	Node* ptr;	// pointer to 1st node in list
 
 public:
 	CList();		// set ptr to null
 	~CList();
-	void insertNode(int new_data);	// add new node at end of list
+	void insertNode(T new_data);	// add new node at end of list
 	void deleteNode();	// delete node at end of list
-	int getData(int index);		// get data from nth item in list
+	T getData(int index);		// get data from nth item in list
 };
 
 #endif

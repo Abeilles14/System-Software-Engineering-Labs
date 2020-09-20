@@ -78,17 +78,17 @@ int main() {
 	pullLamp.toggle();
 	printf("Power of Lamp = %d\n", pullLamp.getPower());	// print power
 
-	// linked list tests
-	std::cout << "\nLINKED LISTS TESTS:\n";
-	CList list;
+	// linked list and template tests
+	std::cout << "\nLINKED LISTS & TEMPLATE TESTS:\n";
+	CList<int> L1;
 
-	list.insertNode(10);
-	list.insertNode(20);
-	list.insertNode(30);
+	L1.insertNode(5);
+	L1.insertNode(20);
+	L1.insertNode(30);
 
-	list.getData(0);
-	list.deleteNode();
-	list.getData(0);
+	L1.getData(0);
+	L1.deleteNode();
+	L1.getData(0);
 
 	std::cout << "\nEND OF TESTS\n";
 

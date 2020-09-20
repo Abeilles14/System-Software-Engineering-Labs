@@ -3,17 +3,17 @@
 
 using namespace std;
 
-CList::CList() {
+template <class T> CList<T>::CList() {
 	ptr = NULL;		// set ptr node to null
 
 	cout << "CList constructor called, list is null\n";
 }
 
-CList::~CList() {
+template <class T> CList<T>::~CList() {
 	cout << "CList destructor called\n";
 }
 
-void CList::insertNode(int new_data) {
+template <class T> void CList<T>::insertNode(T new_data) {
 	Node* new_node = new Node();
 
 	if (ptr == NULL) {
@@ -31,7 +31,7 @@ void CList::insertNode(int new_data) {
 	cout << "Node data " << ptr->data << " added to CList\n";
 }
 
-void CList::deleteNode() {
+template <class T> void CList<T>::deleteNode() {
 	Node* temp = new Node();
 
 	if (ptr != NULL) {
@@ -43,7 +43,7 @@ void CList::deleteNode() {
 	}
 }
 
-int CList::getData(int index) {
+template <class T> T CList<T>::getData(int index) {
 	Node* current = ptr;
 
 	if (ptr == NULL) {
