@@ -78,8 +78,8 @@ int main() {
 	pullLamp.toggle();
 	printf("Power of Lamp = %d\n", pullLamp.getPower());	// print power
 
-	// linked list and template tests
-	std::cout << "\nLINKED LISTS & TEMPLATE TESTS:\n";
+	// linked list tests
+	std::cout << "\nLINKED LISTS TESTS:\n";
 	CList<int> L1;
 
 	L1.insertNode(5);
@@ -89,6 +89,17 @@ int main() {
 	L1.getData(0);
 	L1.deleteNode();
 	L1.getData(0);
+
+	// template tests
+	std::cout << "\nTEMPLATE TESTS:\n";
+	CBulb b1(100);		// create a 100 watt bulb
+	CSwitch s1;
+
+	CList <CBulb*> L2;		// A list that holds pointers to CBulb objects
+	CList <CSwitch*> L3;		// A list that holds pointers to CSwitch objects
+
+	L2.insertNode(&b1);			// Correct: add a pointer to bulb ‘b1’ to the list
+	L3.insertNode(&s1);			// Correct: add a pointer to switch ‘s1’ to the list
 
 	std::cout << "\nEND OF TESTS\n";
 
