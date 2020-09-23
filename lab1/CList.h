@@ -10,20 +10,25 @@ template <class T> struct Node {
 	T data;
 };
 
+// Template class implementation
 template <class T> class CList {
 private:
 	Node<T>* ptr;	// pointer to 1st node in list
 
 public:
+	// Constructors/Destructors
 	CList();		// set ptr to null
 	~CList();
+
+	// Accessors
+	T getData(int index);			// get data from nth item in list
+
+	// Mutators
 	void insertNode(T new_data);	// add new node at end of list
 	void deleteNode();				// delete node at end of list
-	T getData(int index);			// get data from nth item in list
 };
 
-// Template class implementation
-
+// Constructors/Destructors
 template <class T> CList<T>::CList() {
 	ptr = NULL;		// set ptr node to null
 
@@ -34,6 +39,24 @@ template <class T> CList<T>::~CList() {
 	cout << "CList destructor called\n";
 }
 
+// Accessors
+template <class T> T CList<T>::getData(int index) {
+	Node<T>* current = ptr;
+
+	if (ptr == NULL) {
+		return NULL;
+	}
+
+	for (int i = 0; i < index; i++) {
+		current = current->next;
+	}
+
+	cout << "Data at CList node " << index << " = " << current->data << "\n";
+
+	return current->data;
+}
+
+// Mutators
 template <class T> void CList<T>::insertNode(T new_data) {
 	Node<T>* new_node = new Node<T>();
 
@@ -64,20 +87,5 @@ template <class T> void CList<T>::deleteNode() {
 	}
 }
 
-template <class T> T CList<T>::getData(int index) {
-	Node<T>* current = ptr;
-
-	if (ptr == NULL) {
-		return NULL;
-	}
-
-	for (int i = 0; i < index; i++) {
-		current = current->next;
-	}
-
-	cout << "Data at CList node " << index << " = " << current->data << "\n";
-
-	return current->data;
-}
 
 #endif
