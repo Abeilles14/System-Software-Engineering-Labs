@@ -1,9 +1,9 @@
 #include <iostream>
-#include "..\rt.h"
+#include "../../rt.h"
 
 int main() {
-	for (int i = 0; i < 100; i++) {
-		cout << "Child 2 counter: " << i;
+	for (int i = 0; i < 75; i++) {
+		cout << "Child 2 counter: " << i <<"\n";
 		Sleep(50);
 	}
 
