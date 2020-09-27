@@ -33,6 +33,7 @@
 *.app
 
 # Other
+/handin
 *.suo
 *.db
 *.ipch
