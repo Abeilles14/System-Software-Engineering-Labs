@@ -1,9 +1,13 @@
-#include <iostream>
 #include "../../rt.h"
 
-using namespace std;
+int main(int argc, char* argv[]) {
 
-int main() {
+	cout << "argc   count = " << argc << "\n";
+
+	for (int i = 0; i < argc; i++) {			// set up loop to print out all args
+		cout << "argv[ " << i << "] = " << argv[i] << "\n";
+	}
+
 	for (int i = 0; i < 50; i++) {
 		cout << "Child 1 counter: " << i << "\n";
 		Sleep(50);
