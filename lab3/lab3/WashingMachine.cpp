@@ -1,12 +1,16 @@
 #include "../../rt.h"
 #include "WashingMachine.h"
 
+#define UINT unsigned int
 #define IDLE 0
 #define FILLING 1
 #define WASHING 2
 #define DRAINING 3
 #define SPINNING 4
 #define END 5
+
+#define RUNNING 6
+#define STOPPING 7
 
 WashingMachine::WashingMachine(int number) {
 	this->machineNumber = number;
@@ -32,6 +36,9 @@ void WashingMachine::End() {
 int WashingMachine::main(void) {
 	printf("Washing Machine %d: Ready\n", this->machineNumber);
 
+	CThread t1(this->Motor, SUSPENDED, NULL);
+	CThread t2(this->WaterInletValve, SUSPENDED, NULL);
+
 	for (;;) {
 		if (start) {
 			switch (this->currentState) {
@@ -43,12 +50,15 @@ int WashingMachine::main(void) {
 				}
 				case FILLING: {
 					printf("Washing Machine %d: filling\n", this->machineNumber);
+					t2.Resume();
+					t2.WaitForThread();
 					this->currentState = WASHING;
 					Sleep(2000);
 					break;
 				}
 				case WASHING: {
 					printf("Washing Machine %d: washing\n", this->machineNumber);
+					t1.Resume();
 					this->currentState = DRAINING;
 					Sleep(2000);
 					break;
@@ -67,15 +77,70 @@ int WashingMachine::main(void) {
 				}
 				case END: {
 					printf("Washing Machine %d: finished. Going back to idle\n", this->machineNumber);
+					t1.WaitForThread();
 					this->currentState = IDLE;
 					this->start = false;
 				}
 			}
 		}
-		if (!running) {
+		if (!this->running) {
 			printf("Washing Machine %d: turning off\n", this->machineNumber);
 			return 0;
 		}
 	}
 	return 0;
+}
+
+UINT __stdcall WashingMachine::WaterInletValve(void* args) {
+	UINT inletValveState = IDLE;
+
+	for (;;) {
+		switch (inletValveState) {
+			case IDLE: {
+				printf("Washing Machine %d: inlet valve starting\n", this->machineNumber);
+				inletValveState = FILLING;
+				Sleep(2000);
+				break;
+			}
+			case FILLING: {
+				printf("Washing Machine %d: inlet valve filling\n", this->machineNumber);
+				inletValveState = STOPPING;
+				Sleep(2000);
+				break;
+			}
+			case STOPPING: {
+				printf("Washing Machine %d: inlet valve stopping\n", this->machineNumber);
+				Sleep(2000);
+				return 0;
+			}
+		}
+	}
+
+	return 0;
+}
+
+UINT __stdcall WashingMachine::Motor (void* args) {
+	UINT motorState = IDLE;
+
+	for (;;) {
+		switch(motorState) {
+			case IDLE: {
+				printf("Washing Machine %d: motor idling\n", this->machineNumber);
+				motorState = RUNNING;
+				Sleep(2000);
+				break;
+			}
+			case RUNNING: {
+				printf("Washing Machine %d: motor running\n", this->machineNumber);
+				motorState = STOPPING;
+				Sleep(5000);
+				break;
+			}
+			case STOPPING: {
+				printf("Washing Machine %d: motor stopping\n", this->machineNumber);
+				Sleep(2000);
+				return 0;
+			}
+		}
+	}
 }

@@ -11,6 +11,8 @@ private:
 	bool running;
 
 	int main(void);
+	UINT __stdcall GrindCoffee(void* args);
+	UINT __stdcall AddMilkCream(void* args);
 
 public:
 	CoffeeMaker(int number);
