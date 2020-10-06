@@ -12,6 +12,9 @@
 #define RUNNING 6
 #define STOPPING 7
 
+UINT __stdcall WaterInletValve(void* args);
+UINT __stdcall Motor(void* args);
+
 WashingMachine::WashingMachine(int number) {
 	this->machineNumber = number;
 	this->currentState = IDLE;
@@ -36,8 +39,8 @@ void WashingMachine::End() {
 int WashingMachine::main(void) {
 	printf("Washing Machine %d: Ready\n", this->machineNumber);
 
-	CThread t1(this->Motor, SUSPENDED, NULL);
-	CThread t2(this->WaterInletValve, SUSPENDED, NULL);
+	CThread t1(Motor, SUSPENDED, &this->machineNumber);
+	CThread t2(WaterInletValve, SUSPENDED, &this->machineNumber);
 
 	for (;;) {
 		if (start) {
@@ -91,25 +94,27 @@ int WashingMachine::main(void) {
 	return 0;
 }
 
-UINT __stdcall WashingMachine::WaterInletValve(void* args) {
+UINT __stdcall WaterInletValve(void* args) {
+	int machineNumber = *(int*)(args);
+
 	UINT inletValveState = IDLE;
 
 	for (;;) {
 		switch (inletValveState) {
 			case IDLE: {
-				printf("Washing Machine %d: inlet valve starting\n", this->machineNumber);
+				printf("Washing Machine %d: inlet valve starting\n", machineNumber);
 				inletValveState = FILLING;
 				Sleep(2000);
 				break;
 			}
 			case FILLING: {
-				printf("Washing Machine %d: inlet valve filling\n", this->machineNumber);
+				printf("Washing Machine %d: inlet valve filling\n", machineNumber);
 				inletValveState = STOPPING;
 				Sleep(2000);
 				break;
 			}
 			case STOPPING: {
-				printf("Washing Machine %d: inlet valve stopping\n", this->machineNumber);
+				printf("Washing Machine %d: inlet valve stopping\n", machineNumber);
 				Sleep(2000);
 				return 0;
 			}
@@ -119,25 +124,27 @@ UINT __stdcall WashingMachine::WaterInletValve(void* args) {
 	return 0;
 }
 
-UINT __stdcall WashingMachine::Motor (void* args) {
+UINT __stdcall Motor (void* args) {
+	int machineNumber = *(int*)(args);
+
 	UINT motorState = IDLE;
 
 	for (;;) {
 		switch(motorState) {
 			case IDLE: {
-				printf("Washing Machine %d: motor idling\n", this->machineNumber);
+				printf("Washing Machine %d: motor idling\n", machineNumber);
 				motorState = RUNNING;
 				Sleep(2000);
 				break;
 			}
 			case RUNNING: {
-				printf("Washing Machine %d: motor running\n", this->machineNumber);
+				printf("Washing Machine %d: motor running\n", machineNumber);
 				motorState = STOPPING;
 				Sleep(5000);
 				break;
 			}
 			case STOPPING: {
-				printf("Washing Machine %d: motor stopping\n", this->machineNumber);
+				printf("Washing Machine %d: motor stopping\n", machineNumber);
 				Sleep(2000);
 				return 0;
 			}

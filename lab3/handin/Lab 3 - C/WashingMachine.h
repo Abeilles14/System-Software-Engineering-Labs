@@ -11,8 +11,6 @@ private:
 	bool running;
 
 	int main(void);
-	//UINT __stdcall WaterInletValve(void* args);
-	//UINT __stdcall Motor(void* args);
 
 public:
 	WashingMachine(int number);

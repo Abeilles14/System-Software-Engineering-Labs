@@ -12,6 +12,9 @@
 #define FILTERING 7
 #define DISPENSING 8
 
+UINT __stdcall GrindCoffee(void* args);
+UINT __stdcall AddMilkCream(void* args);
+
 CoffeeMaker::CoffeeMaker(int number) {
 	this->machineNumber = number;
 	this->currentState = IDLE;
@@ -36,8 +39,8 @@ void CoffeeMaker::End() {
 int CoffeeMaker::main(void) {
 	printf("Coffee Maker %d: Ready\n", this->machineNumber);
 
-	CThread t1(this->GrindCoffee, SUSPENDED, NULL);
-	CThread t2(this->AddMilkCream, SUSPENDED, NULL);
+	CThread t1(GrindCoffee, SUSPENDED, &this->machineNumber);
+	CThread t2(AddMilkCream, SUSPENDED, &this->machineNumber);
 
 	for (;;) {
 		if (start) {
@@ -92,25 +95,27 @@ int CoffeeMaker::main(void) {
 	return 0;
 }
 
-UINT __stdcall CoffeeMaker::GrindCoffee(void* args) {
+UINT __stdcall GrindCoffee(void* args) {
+	int machineNumber = *(int*)(args);
+
 	UINT grindingState = IDLE;
 
 	for (;;) {
 		switch (grindingState) {
 			case IDLE: {
-				printf("Coffee Maker %d: coffee grinding idling\n", this->machineNumber);
+				printf("Coffee Maker %d: coffee grinding idling\n", machineNumber);
 				Sleep(1000);
 				grindingState = GRINDING;
 				break;
 			}
 			case GRINDING: {
-				printf("Coffee Maker %d: coffee grinding running\n", this->machineNumber);
+				printf("Coffee Maker %d: coffee grinding running\n", machineNumber);
 				Sleep(2000);
 				grindingState = FILTERING;
 				break;
 			}
 			case FILTERING: {
-				printf("Coffee Maker %d: grinded coffee filtering\n", this->machineNumber);
+				printf("Coffee Maker %d: grinded coffee filtering\n", machineNumber);
 				Sleep(3000);
 				grindingState = IDLE;
 				return 0;
@@ -121,19 +126,21 @@ UINT __stdcall CoffeeMaker::GrindCoffee(void* args) {
 	return 0;
 }
 
-UINT __stdcall CoffeeMaker::AddMilkCream(void* args) {
+UINT __stdcall AddMilkCream(void* args) {
+	int machineNumber = *(int*)(args);
+
 	UINT milkCreamState = IDLE;
 
 	for (;;) {
 		switch (milkCreamState) {
 			case IDLE: {
-				printf("Coffee Maker %d: coffee milk and cream idling\n", this->machineNumber);
+				printf("Coffee Maker %d: coffee milk and cream idling\n", machineNumber);
 				Sleep(1000);
 				milkCreamState = DISPENSING;
 				break;
 			}
 			case DISPENSING: {
-				printf("Coffee Maker %d: coffee milk and cream dispensing\n", this->machineNumber);
+				printf("Coffee Maker %d: coffee milk and cream dispensing\n", machineNumber);
 				Sleep(2000);
 				milkCreamState = IDLE;
 				return 0;
