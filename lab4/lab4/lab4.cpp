@@ -1,62 +1,84 @@
 #include "..\..\rt.h"
 
-struct example{
-	int x;
-	float y;
+UINT __stdcall Thread1(void* args);
+UINT __stdcall Thread2(void* args);
+
+struct coffeeShop {
+	char name[10];
+	char size;
+	int cups;
 };
 
-int i = 5;
-int array1[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+struct donutShop {
+	char name[14];
+	int amount;
+};
 
-char name[15] = "Hello World";
-struct example mystruct = { 2, 5.5 };
+char KeyData;
+
+UINT __stdcall Thread1(void* args) {
+	struct coffeeShop coffee = *(struct coffeeShop*)(args);
+
+	CPipe p1("Pipe1", 1024);		// create pipeline 1 from thread 1
+
+	while (true) {
+		p1.Read(&coffee.name, sizeof(char[10]));
+		cout << "Parent Thread 1: Read " << coffee.name << " from Pipe1\n";
+
+		p1.Read(&coffee.size, sizeof(char));
+		cout << "Parent Thread 1: Read " << coffee.size << " from Pipe1\n";
+
+		p1.Read(&coffee.cups, sizeof(int));
+		cout << "Parent Thread 1: Read " << coffee.cups << " from Pipe1\n";
+	}
+
+	return 0;
+}
+
+UINT __stdcall Thread2(void* args) {
+	struct donutShop donut = *(struct donutShop*)(args);
+
+	CPipe p2("Pipe2", 1024);		// create pipeline 2 from thread 2
+
+	while (true) {
+		p2.Read(&donut.name, sizeof(char[14]));
+		cout << "Parent Thread 2: Read " << donut.name << " from Pipe2\n";
+
+		p2.Read(&donut.amount, sizeof(int));
+		cout << "Parent Thread 2: Read " << donut.amount << " from Pipe2\n";
+	}
+
+	return 0;
+}
 
 int main() {
-	cout << "Parent Process Creating the Pipelines\n";
+	struct coffeeShop coffee;
+	struct donutShop donut;
 
-	CPipe pipe1("MyPipe1", 1024);		// create pipes size 1024
-	CPipe pipe2("MyPipe2", 1024);
+	cout << "Parent Process Creating 2 Child Processes\n";
 
-	cout << "Parent Process Creating Child Processes to Read from Pipelines\n";
-
-	CProcess p1("C:\\Users\\Isabelle\\Documents\\UBC_ELEC\\CPEN333\\Labs\\lab4\\lab4\\Debug\\Child1.exe", 	// create child process
+	CProcess child1("C:\\Users\\Isabelle\\Documents\\UBC_ELEC\\CPEN333\\Labs\\lab4\\lab4\\Debug\\Child1.exe", 	// create child process
 		NORMAL_PRIORITY_CLASS,
 		OWN_WINDOW,
 		ACTIVE
 	);
 
-	CProcess p2("C:\\Users\\Isabelle\\Documents\\UBC_ELEC\\CPEN333\\Labs\\lab4\\lab4\\Debug\\Child2.exe", 	// create child process
+	CProcess child2("C:\\Users\\Isabelle\\Documents\\UBC_ELEC\\CPEN333\\Labs\\lab4\\lab4\\Debug\\Child2.exe", 	// create child process
 		NORMAL_PRIORITY_CLASS,
 		OWN_WINDOW,
 		ACTIVE
 	);
 
-	cout << "Hit RETURN to Write the integer " << i << " to the pipelines\n";
-	getchar();
+	cout << "Parent Process Creating 2 Child threads to read from their Pipeline\n";
 
-	pipe1.Write(&i, sizeof(i));						// write the int 'i' to the pipe
-	pipe2.Write(&i, sizeof(i));
+	CThread t1(Thread1, ACTIVE, &coffee);
+	CThread t2(Thread2, ACTIVE, NULL);
 
-	cout << "Hit RETURN to Write the integer array 1 2 3 4 5 6 7 8 9 0 to the pipeline\n";
-	getchar();
-
-	pipe1.Write(&array1[0], sizeof(array1));			// write the array of integers' to the pipe
-	pipe2.Write(&array1[0], sizeof(array1));
-
-	cout << "Hit RETURN to Write the string " << name << " to the pipeline\n";
-	getchar();
-
-	pipe1.Write(&name[0], sizeof(name));				// write the string to the pipe
-	pipe2.Write(&name[0], sizeof(name));
-
-	cout << "Hit RETURN to Write the structure [" << mystruct.x << ", " << mystruct.y << "] to the pipeline\n";
-	getchar();
-
-	pipe1.Write(&mystruct, sizeof(mystruct));			// write the structure to the pipeline
-	pipe2.Write(&mystruct, sizeof(mystruct));
-
-	p1.WaitForProcess();
+	while (1) {
+		KeyData = _getch();		// prevent process from exiting + it's fun
+		cout << "Parent Thread Read " << KeyData << " from keyboard\n";
+	}
 
 	return 0;			
-
 }
+

@@ -1,42 +1,37 @@
 #include "..\..\rt.h"
 
-struct example {
-	int x;
-	float y;
+struct coffeeShop {
+	const char* name[10];
+	char size;
+	int cups;
 };
 
-int i;
-int array1[10];
-
-char name[15];
-struct example mystruct;
-
 int main() {
+	struct coffeeShop coffee;
 
-	int x;
+	cout << "Child1 Process Creating the Pipeline\n";
 
-	printf("Child Process 1 Opening Pipeline 1\n");
-	CPipe p1("MyPipe1", 1024);		// create pipes size 1024
+	CPipe p1("Pipe1");
 
-	p1.Read(&i, sizeof(i));			// read int i from pipe and store value 
-	cout << "Child Process 1 read integer = " << i << " from Pipeline 1\n";
-
-	p1.Read(&array1[0], sizeof(array1));		// read array of integers and store values
+	cout << "Parent Process Creating Child Process to Read from Pipeline\n";
 	
-	printf("Child Process 1 read array = ");
-	for (x = 0; x < sizeof(array1) / sizeof(array1[0]); x++) {
-		cout << " " << array1[x];
-	}
+	coffee.name[10] = "Espresso";
+	p1.Write(&coffee.name[0], sizeof(coffee.name));
+	cout << "Child1 Writing " << coffee.name << " to pipeline\n";
 
-	putchar('\n');
+	Sleep(3000);
 
-	p1.Read(&name[0], sizeof(name));		// read string frome pipe and store values
-	cout << "Child Process 1 read string = " << name << ", from Pipeline 1\n";
+	coffee.size = 'L';
+	p1.Write(&coffee.size, sizeof(coffee.size));
+	cout << "Child1 Writing " << coffee.size << " to pipeline\n";
 
-	p1.Read(&mystruct, sizeof(mystruct));
-	cout << "Child Process 1 read [" << mystruct.x << "," << mystruct.y << "] from Pipeline 1\n";
+	Sleep(3000);
 
-	Sleep(5000);
+	coffee.cups = 5;
+	p1.Write(&coffee.cups, sizeof(coffee.cups));
+	cout << "Child1 Writing " << coffee.cups << " to pipeline\n";
+
+	Sleep(10000);
 
 	return 0;
 }
