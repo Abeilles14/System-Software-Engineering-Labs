@@ -1,89 +1,40 @@
-#include "..\..\rt.h"
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-struct coffeeShop {
-	char name[20];
-	char size;
-	int cups;
-};
+#include <stdio.h>
+#include <winsock2.h>
 
-struct donutShop {
-	char name[20];
-	int amount;
-};
-
-char KeyData;
-
-UINT __stdcall Thread1(void*) {
-	struct coffeeShop coffee;
-
-	CPipe p1("Pipe1", 1024);		// create pipeline 1 from thread 1
-
-	while (true) {
-		p1.Read(&coffee.name[0], sizeof(coffee.name));
-		cout << "Parent Thread 1: Read "<< coffee.name << " from Pipe1\n";
-
-		Sleep(2000);
-
-		p1.Read(&coffee.size, sizeof(char));
-		cout << "Parent Thread 1: Read " << coffee.size << " from Pipe1\n";
-
-		Sleep(2000);
-
-		p1.Read(&coffee.cups, sizeof(int));
-		cout << "Parent Thread 1: Read " << coffee.cups << " from Pipe1\n";
-	}
-
-	return 0;
-}
-
-UINT __stdcall Thread2(void*) {
-	struct donutShop donut;
-
-	CPipe p2("Pipe2", 1024);		// create pipeline 2 from thread 2
-
-	while (true) {
-		Sleep(2000);
-
-		p2.Read(&donut.name[0], sizeof(donut.name));
-		cout << "Parent Thread 2: Read " << donut.name << " from Pipe1\n";
-
-		Sleep(4000);
-
-		p2.Read(&donut.amount, sizeof(int));
-		cout << "Parent Thread 2: Read " << donut.amount << " from Pipe2\n";
-	}
-
-	return 0;
-}
+#pragma comment(lib, "ws2_32.lib")		// winsock library
 
 int main() {
-	struct coffeeShop coffee;
-	struct donutShop donut;
+	WSADATA WSAData;
+	SOCKET sock;
+	SOCKET csock = 0;
+	SOCKADDR_IN sin;
+	SOCKADDR_IN csin;
 
-	cout << "Parent Process Creating 2 Child Processes\n";
+	WSAStartup(MAKEWORD(2, 0), &WSAData);
 
-	CProcess child1("C:\\Users\\Isabelle\\Documents\\UBC_ELEC\\CPEN333\\Labs\\lab4\\lab4\\Debug\\Child1.exe", 	// create child process
-		NORMAL_PRIORITY_CLASS,
-		OWN_WINDOW,
-		ACTIVE
-	);
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	sin.sin_addr.s_addr = INADDR_ANY;
+	sin.sin_family = AF_INET;
+	sin.sin_port = htons(23);
+	bind(sock, (SOCKADDR*)& sin, sizeof(sin));
 
-	CProcess child2("C:\\Users\\Isabelle\\Documents\\UBC_ELEC\\CPEN333\\Labs\\lab4\\lab4\\Debug\\Child2.exe", 	// create child process
-		NORMAL_PRIORITY_CLASS,
-		OWN_WINDOW,
-		ACTIVE
-	);
+	listen(sock, 0);
+	int val = 0;
+	
+	while (1) {
+		int sizeof_csin = sizeof(csin);
+		val = accept(sock, (SOCKADDR*)& csin, &sizeof_csin);
 
-	cout << "Parent Process Creating 2 Child threads to read from their Pipeline\n";
-
-	CThread t1(Thread1, ACTIVE, &coffee);
-	CThread t2(Thread2, ACTIVE, NULL);
-
-	while (true) {		// prevent process from exiting + it's fun
-		KeyData = _getch();
-		cout << "Parent Thread Read " << KeyData << " from keyboard\n";
+		if (val != INVALID_SOCKET) {
+			send(csock, "Hello world!\r\n", 14, 0);
+			closesocket(csock);
+		}
 	}
 
-	return 0;			
-}
+	closesocket(sock);
+	WSACleanup();		// cleanup sockets
 
+	return 0;
+}

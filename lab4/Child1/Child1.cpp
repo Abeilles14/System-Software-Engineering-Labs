@@ -1,35 +1,27 @@
-#include "..\..\rt.h"
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-struct coffeeShop {
-	char name[20];
-	char size;
-	int cups;
-};
-
+#include <winsock2.h>
+#pragma comment(lib, "ws2_32.lib")
 
 int main() {
-	struct coffeeShop coffee;
+	WSADATA WSAData;
+	SOCKET sock;
+	SOCKADDR_IN sin;
 
-	cout << "Child1 Process Creating the Pipeline\n";
+	char buffer[225];
 
-	CPipe p1("Pipe1", 1024);
+	WSAStartup(MAKEWORD(2, 0), &WSAData);		// set up to connect on IRC
 
-	cout << "Parent Process Creating Child Process to Read from Pipeline\n";
-	
-	strcpy_s(coffee.name,"Espresso");
+	sock = socket(AF_INET, SOCK_STREAM, 0);
+	sin.sin_addr.s_addr = inet_addr("62.250.14.6");
+	sin.sin_family = AF_INET;
+	sin.sin_port = htons(6667);
 
-	p1.Write(&coffee.name[0], sizeof(coffee.name));
-	cout << "Child1 Writing " << coffee.name << " to pipeline\n";
+	connect(sock, (SOCKADDR*)& sin, sizeof(sin));
+	recv(sock, buffer, sizeof(buffer), 0);
 
-	coffee.size = 'L';
-	p1.Write(&coffee.size, sizeof(coffee.size));
-	cout << "Child1 Writing " << coffee.size << " to pipeline\n";
-
-	coffee.cups = 5;
-	p1.Write(&coffee.cups, sizeof(coffee.cups));
-	cout << "Child1 Writing " << coffee.cups << " to pipeline\n";
-
-	Sleep(10000);
+	closesocket(sock);
+	WSACleanup();
 
 	return 0;
 }
