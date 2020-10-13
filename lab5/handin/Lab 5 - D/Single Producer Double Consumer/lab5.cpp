@@ -5,8 +5,7 @@ struct mydatapooldata {
 	int x;
 };
 
-struct	mydatapooldata* TheDataPointer1;		// pointer to the actual data pool
-struct	mydatapooldata* TheDataPointer2;		// pointer to the actual data pool
+struct	mydatapooldata* TheDataPointer;		// pointer to the actual data pool
 
 int main()
 {
@@ -17,46 +16,32 @@ int main()
 
 //	Create a datapool and then get a pointer to it
 
-	CDataPool dp1("MyDataPoolName1", sizeof(struct mydatapooldata));
-	CDataPool dp2("MyDataPoolName2", sizeof(struct mydatapooldata));
-
-	TheDataPointer1 = (struct mydatapooldata*)dp1.LinkDataPool();
-	TheDataPointer2 = (struct mydatapooldata*)dp2.LinkDataPool();
+	CDataPool dp1("MyDataPoolName", sizeof(struct mydatapooldata));
+	TheDataPointer = (struct mydatapooldata*)dp1.LinkDataPool();	
 
 	CProcess p1("C:\\Users\\Isabelle\\Documents\\UBC_ELEC\\CPEN333\\Labs\\lab5\\lab5\\Debug\\Child1.exe",	// pathlist to child program executable
 		NORMAL_PRIORITY_CLASS,	
 		OWN_WINDOW,			
 		ACTIVE		
 	);
-
 	CProcess p2("C:\\Users\\Isabelle\\Documents\\UBC_ELEC\\CPEN333\\Labs\\lab5\\lab5\\Debug\\Child2.exe",	// pathlist to child program executable
 		NORMAL_PRIORITY_CLASS,		
 		OWN_WINDOW,					
 		ACTIVE					
 	);
 
-	printf("Consumer Process Running\n");
+	printf("Producer Process Running\n");
 
-	for (;;) {
-		if (ps1.Read() > 0) {
-			ps1.Wait();
+	for (int i = 0; i < 10; i++) {
+		cs1.Wait();
+		cs2.Wait();
 
-			cout << "Hit RETURN to Consume Data from Datapool 1\n";
-			getchar();
-			cout << "Datapool 1 consumed " << TheDataPointer1->x << "\n";
+		TheDataPointer->x = i;			// generate data and store in datapool
 
-			cs1.Signal();
-		}
+		ps1.Signal();
+		ps2.Signal();
 
-		if (ps2.Read() > 0) {
-			ps2.Wait();
-
-			cout << "Hit RETURN to Consume Data from Datapool 2\n";
-			getchar();
-			cout << "Datapool 2 consumed " << TheDataPointer2->x << "\n";
-
-			cs2.Signal();
-		}
+		cout << "Produced " << i << "\n";
 	}
 
 	p1.WaitForProcess();
