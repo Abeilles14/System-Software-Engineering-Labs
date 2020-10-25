@@ -17,8 +17,8 @@ private:
 	CSemaphore* task;
 
 public:
-	Technician(std::string mutexName, int resources, int taskTime, std::string role, std::string taskMessage, int cursorX, int pitstopNum) {
-		this->task = new CSemaphore(mutexName, resources);
+	Technician(std::string mutexName, int resources, int taskTime, std::string role, std::string taskMessage, int cursorX) {
+		this->task = new CSemaphore(mutexName, 0);
 		this->taskTime = taskTime;
 		this->role = role;
 		this->message = taskMessage;
@@ -38,6 +38,7 @@ public:
 			printf("TECH: %s -> TASK: %s COMPLETED.\n", this->role.c_str(), this->message.c_str());
 
 			this->task->Signal();
+			Sleep(2000);
 		}
 
 		return 0;
