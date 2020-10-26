@@ -1,4 +1,4 @@
-#include "../../rt.h"
+ies,#include "../../rt.h"
 #include <atomic>
 
 UINT __stdcall Child1(void* args);
@@ -18,7 +18,7 @@ public:
 
 	~Named() {
 		delete this->sharedMutex;
-		cout << "Mutex deletede";
+		cout << "Mutex deleted";
 	}
 
 	void WriteToTerminal(UINT x, UINT y, const char* output) {

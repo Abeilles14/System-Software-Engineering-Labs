@@ -7,45 +7,39 @@
 class Technician : public ActiveClass
 {
 private:
-	int technicianNumber;
-	time_t taskTime;
+	int taskTime;
+	int cursorX;
+	int pitstopNum;
+
+	std::string role;
 	std::string message;
 
-	CMutex* sharedMutex;
+	CSemaphore* task;
 
 public:
-	Technician(std::string mutexName, int number, time_t taskTime, std::string taskMessage) {
-		this->sharedMutex = new CMutex("__MonitorMutex__" + mutexName);
-		this->technicianNumber = number;
+	Technician(std::string mutexName, int resources, int taskTime, std::string role, std::string taskMessage, int cursorX, int pitstopNum) {
+		this->task = new CSemaphore(mutexName, resources);
 		this->taskTime = taskTime;
+		this->role = role;
 		this->message = taskMessage;
-	}
-
-	~Technician() {
-		delete this->sharedMutex;
-		cout << "Mutex deleted";
+		this->cursorX = cursorX;
+		this->pitstopNum = pitstopNum;
 	}
 
 	int main(void) {
 		for (;;) {
-			this->sharedMutex->Wait();
+			this->task->Wait();
 
-			printf("Technician %d -> TASK: %s BEGINNING.\n", this->technicianNumber, this->message.c_str());
+			printf("TECH: %s -> TASK: %s BEGINNING.\n", this->role.c_str(), this->message.c_str());
 
 			// Setup timing
-			auto finishTime = time(0) + this->taskTime;
+			SLEEP(taskTime);
 
-			for(;;) {
-				if (finishTime < time(0)) {
-					break;
-				}
-			}
+			printf("TECH: %s -> TASK: %s COMPLETED.\n", this->role.c_str(), this->message.c_str());
 
-			printf("Technician %d -> TASK: %s COMPLETED.\n", this->technicianNumber, this->message.c_str());
-
-			this->sharedMutex->Signal();
+			this->task->Signal();
 		}
 
-	return 0;
+		return 0;
 	}
 };
