@@ -1,8 +1,6 @@
 #pragma once
 
 #include "../../rt.h"
-#include <chrono>
-#include <ctime>
 #include <vector>
 
 class Driver : public ActiveClass
@@ -18,60 +16,49 @@ private:
 	int laptime;
 
 	// Contains number of laps in between pit stops
-	int pitStopLaps;
+	std::vector<int> pitstopLaps;
 
 	// Pit stop light controlled by supervisor. 
 	CSemaphore* pitEntryLight;
-	CSemaphore* pitStopLight;
-
-	// Indicates whether or not the driver is in the pit stop.
-	CSemaphore* driverInPitStop;
-
+	CSemaphore* pitExitLight;
 public:
-	Driver(int pitstopNumber, int laps, int time, int pitstops) {
+	Driver(int pitstopNumber, int laptime, std::vector<int> pitstops) {
 		// Same semaphore as one in pit stop
 		this->pitEntryLight = new CSemaphore("pitEntryLight", 0);
-		this->pitStopLight = new CSemaphore("pitStopLight", 0);
-		this->driverInPitStop = new CSemaphore("driverInPitStop", 0);
+		this->pitExitLight = new CSemaphore("pitExitLight", 0);
 		this->driverNumber = pitstopNumber;
-		this->lapNumber = laps;
-		this->laptime = time;
-		this->pitStopLaps = pitstops;
+		this->lapNumber = 0;
+		this->laptime = laptime;
+		this->pitstopLaps = pitstops;
 	}
 
 	int main(void) {
-		bool needPitStop = 0;
-		int lap = 0;
-
-		// Number of laps in between needed pit stops
-		int lapsSincePitStop = 5;
+		int pitstopCount = 0;
 
 		for (;;) {
-			// Each lap increment
-			Sleep(laptime);
-			lap++;
 
-			// Complete the race
-			if (lap == this->lapNumber) {
-				break;
-			}
+			if (lapNumber == this->pitstopLaps[pitstopCount]) {
+				printf("Driver %d -> LAP: %d REQUESTING ENTRY TO PITSTOP.\n", this->driverNumber, this->lapNumber);
 
-			// Check if the car needs a pitstop after a certain number of laps
-			if (lap > lapsSincePitStop) {
-				needPitStop = true;
-				lapsSincePitStop += lapsSincePitStop;
-			}
+				// Check if the pitstop light is available
+				// Will set pit stop light to zero as it consumes it
+				if (pitEntryLight->Wait(10) == WAIT_OBJECT_0) {
 
-			// Check if the pitstop light is available
-			// Will set pit stop light to zero as it consumes it
-			if (pitEntryLight->Read() && needPitStop) {
+					printf("Driver %d -> LAP: %d ENTERING PITSTOP.\n", this->driverNumber, this->lapNumber);
 
-				printf("Driver %d -> LAP: %d ENTERING PITSTOP.\n", this->driverNumber, this->lapNumber);
+					// Wait for supervisor to signal driver to leave
+					this->pitExitLight->Wait();
 
-				// Wait for supervisor to signal driver to leave
-				this->pitStopLight->Wait();
-				printf("Driver %d -> LAP: %d EXITING PITSTOP.\n", this->driverNumber, this->lapNumber);
-				needPitStop = false;
+					printf("Driver %d -> LAP: %d EXITING PITSTOP.\n", this->driverNumber, this->lapNumber);
+
+					pitstopCount++;
+
+				}
+				else {		// if pitstop busy, start next lap, try again next lap
+					printf("Driver %d -> LAP: %d DENIED ENTRY TO PITSTOP, TRY AGAIN NEXT LAP.\n", this->driverNumber, this->lapNumber);
+
+					pitstopLaps[pitstopCount]++;
+				}
 			}
 		}
 

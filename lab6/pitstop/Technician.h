@@ -15,27 +15,37 @@ private:
 	std::string message;
 
 	CSemaphore* task;
+	CMutex* monitorMutex;
 
 public:
-	Technician(std::string mutexName, int resources, int taskTime, std::string role, std::string taskMessage, int cursorX) {
+	Technician(std::string mutexName, int taskTime, int cursorX) {
 		this->task = new CSemaphore(mutexName, 0);
 		this->taskTime = taskTime;
 		this->role = role;
-		this->message = taskMessage;
 		this->cursorX = cursorX;
 		this->pitstopNum = pitstopNum;
+		this->monitorMutex = new CMutex("Monitor", 1);
 	}
 
 	int main(void) {
 		for (;;) {
 			this->task->Wait();
 
-			printf("TECH: %s -> TASK: %s BEGINNING.\n", this->role.c_str(), this->message.c_str());
+			//printf("TECH: %s -> TASK: %s BEGINNING.\n", this->role.c_str(), this->message.c_str());
 
 			// Setup timing
+			monitorMutex->Wait();
+			MOVE_CURSOR(this->cursorX, 1);
+			printf("1");
+			fflush(stdout);
+			monitorMutex->Signal();
 			SLEEP(taskTime);
 
-			printf("TECH: %s -> TASK: %s COMPLETED.\n", this->role.c_str(), this->message.c_str());
+			monitorMutex->Wait();
+			MOVE_CURSOR(this->cursorX, 1);
+			printf("0");
+			fflush(stdout);
+			monitorMutex->Signal();
 
 			this->task->Signal();
 			Sleep(2000);
