@@ -47,21 +47,21 @@ UINT __stdcall Supervisor(void* args) {
 			nutRemovedFront.Signal();
 			front = 0;
 			frontNut = 1;
-			Sleep(100);
+			Sleep(200);
 		}
 
 		if (nutRemovedFront.Wait(10) == WAIT_OBJECT_0 && frontNut) {
 			oldWheelFront.Signal();
 			frontNut = 0;
 			frontOldWheel = 1;
-			Sleep(100);
+			Sleep(200);
 		}
 
 		if (oldWheelFront.Wait(10) == WAIT_OBJECT_0 && frontOldWheel) {
 			newWheelFront.Signal();
 			frontOldWheel = 0;
 			frontNewWheel = 1;
-			Sleep(100);
+			Sleep(200);
 		}
 
 		if (newWheelFront.Wait(10) == WAIT_OBJECT_0 && frontNewWheel) {
@@ -82,21 +82,21 @@ UINT __stdcall Supervisor(void* args) {
 			oldWheelBack.Signal();
 			backNut = 0;
 			backOldWheel = 1;
-			Sleep(100);
+			Sleep(200);
 		}
 
 		if (oldWheelBack.Wait(10) == WAIT_OBJECT_0 && backOldWheel) {
 			newWheelback.Signal();
 			backOldWheel = 0;
 			backNewWheel = 1;
-			Sleep(100);
+			Sleep(200);
 		}
 
 		if (newWheelback.Wait(10) == WAIT_OBJECT_0 && backNewWheel) {
 			jackingBack.Signal();
 			backNewWheel = 0;
 			backComplete = 1;
-			Sleep(100);
+			Sleep(200);
 		}
 
 		visor.Wait(10);
@@ -108,7 +108,7 @@ UINT __stdcall Supervisor(void* args) {
 		// Consume pit entry light
 		if (pitEntryLight.Read() == 0 && !busy) {
 			busy = 1;
-			Sleep(400);
+			Sleep(100);
 			// Refueling, visor, and debris technicians begin work
 			visor.Signal();
 			debris.Signal();
@@ -118,14 +118,14 @@ UINT __stdcall Supervisor(void* args) {
 			front = 1;
 			jackingBack.Signal();
 			back = 1;
-			Sleep(400);
+			Sleep(100);
 		}
 
 		if (frontComplete && backComplete) {
 			pitExitLight.Signal();
-			Sleep(20);
+			Sleep(100);
 			pitEntryLight.Signal();
-			Sleep(20);
+			Sleep(100);
 			busy = 0;
 			backComplete = 0;
 			frontComplete = 0;
@@ -159,8 +159,8 @@ int main()
 	Technician replaceFW("newWheelFront", 3000, pitList.find("New_Wheel") + 10);
 
 	Technician nutBK("nutRemovedBack", 2000, pitList.find("Wheel_Nut") + 13);
-	Technician removeBK("oldWheelBack", 1000, pitList.find("Old_Wheel") + 13);
-	Technician replaceBK("newWheelBack", 3000, pitList.find("New_Wheel") + 13);
+	Technician removeBK("oldWheelBack", 3000, pitList.find("Old_Wheel") + 13);
+	Technician replaceBK("newWheelBack", 1000, pitList.find("New_Wheel") + 13);
 
 	Technician visor("visor", 1000, pitList.find("Visor"));
 	Technician debris("debris", 2000, pitList.find("Debris"));
@@ -245,7 +245,7 @@ void printRaceCar() {
 	cout << "                           \\_|++|  \\__/  |++|__________|_______________|_____|+|  \\__/  |+|__________3   " << endl;
 	cout << "     VROOM VROOM            \\W\\++\\      /++/W_W_W_W_W_W_W_W_W_W_W_W_W_W_W_W_W_\\+\\      /+/_W_W_W_W_W/    " << endl;
 	cout << "                                \\+`===='+/                                     `+`===='+'                " << endl;
-	cout << "                       ===============================================================================" << endl;
+	cout << "==========================================================================================================" << endl;
 	
 	monitorMutex.Signal();
 }
