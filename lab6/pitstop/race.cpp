@@ -3,7 +3,7 @@
 #include "Driver.h"
 #include "pitstop.h"
 #include <new.h>
-
+#include <windows.h>
 
 #define NUMBER_OF_PITSTOPS 10
 #define NUMBER_OF_LAPS 20
@@ -22,7 +22,7 @@ CSemaphore debris("debris", 1);
 CSemaphore refuel("refuel", 1);
 
 CSemaphore pitEntryLight("pitEntryLight", 1);
-CSemaphore pitExitLight("pitExitLight", 1);
+CSemaphore pitExitLight("pitExitLight", 0);
 
 CMutex monitorMutex("Monitor", 1);
 
@@ -38,6 +38,7 @@ UINT __stdcall Supervisor(void* args) {
 	bool backNewWheel = 0;
 	bool frontComplete = 0;
 	bool backComplete = 0;
+	bool busy = 0;
 
 	for (;;) {
 		if (jackingFront.Wait(10) == WAIT_OBJECT_0 && front) {
@@ -64,7 +65,7 @@ UINT __stdcall Supervisor(void* args) {
 		if (newWheelFront.Wait(10) == WAIT_OBJECT_0 && frontNewWheel) {
 			jackingFront.Signal();
 			frontNewWheel = 0;
-			backComplete = 1;
+			frontComplete = 1;
 		}
 
 		if (jackingBack.Wait(10) == WAIT_OBJECT_0 && back) {
@@ -100,9 +101,10 @@ UINT __stdcall Supervisor(void* args) {
 		// Wait for technicians to be available again
 		// Wait will decrement all of the resources, making them zero.
 
-		// IF RANDOM CONDITION
 		// Consume pit entry light
-		if (pitEntryLight.Wait(0) == WAIT_OBJECT_0) {
+		if (pitEntryLight.Read() == 0 && !busy) {
+			busy = 1;
+			Sleep(400);
 			// Refueling, visor, and debris technicians begin work
 			visor.Signal();
 			debris.Signal();
@@ -116,31 +118,48 @@ UINT __stdcall Supervisor(void* args) {
 
 		if (frontComplete && backComplete) {
 			pitExitLight.Signal();
+			Sleep(20);
+			pitEntryLight.Signal();
+			Sleep(20);
+			busy = 0;
+			backComplete = 0;
+			frontComplete = 0;
 		}
 
+
+		monitorMutex.Wait();
+		MOVE_CURSOR(3, 1);
+		printf("%d", busy);
+		MOVE_CURSOR(23, 1);
+		printf("%d", !busy);
+		monitorMutex.Signal();
 	}
 }
 
 int main()
 {
-	std::string pitList = "Pit_Entry_Light Pit_Exit_Light Refuel Visor Debris (front - back) Jacking Wheel_Nut Old_Wheel New_Wheel";
+	HWND console = GetConsoleWindow();
+	RECT rect;
+	GetWindowRect(console, &rect);
+	MoveWindow(console, rect.left, rect.top, 1400, 800, TRUE);
 
+	std::string pitList = "|| Pit_Entry_Light  || Pit_Exit_Light || Refuel || Visor || Debris || Jacking(F)(B) || Wheel_Nut(F)(B) || Old_Wheel(F)(B) || New_Wheel(F)(B) ||";
 	CThread supervisorThread(Supervisor, ACTIVE, NULL);
 
-	Technician jackingFront("jackingFront", 2000, pitList.find("Jacking"));
-	Technician jackingBack("jackingBack", 2000, pitList.find("Jacking") + 4);
+	Technician jackingFront("jackingFront", 1000, pitList.find("Jacking") + 8);
+	Technician jackingBack("jackingBack", 1000, pitList.find("Jacking") + 11);
 
-	Technician nutFW("nutRemovedFront", 2000, pitList.find("Wheel_Nut"));
-	Technician removeFW("oldWheelFront", 2000, pitList.find("Old_Wheel"));
-	Technician replaceFW("newWheelFront", 2000, pitList.find("New_Wheel"));
+	Technician nutFW("nutRemovedFront", 2000, pitList.find("Wheel_Nut") + 10);
+	Technician removeFW("oldWheelFront", 1000, pitList.find("Old_Wheel") + 10);
+	Technician replaceFW("newWheelFront", 3000, pitList.find("New_Wheel") + 10);
 
-	Technician nutBK("nutRemovedBack", 2000, pitList.find("Wheel_Nut") + 4);
-	Technician removeBK("oldWheelBack", 2000, pitList.find("Old_Wheel") + 4);
-	Technician replaceBK("newWheelBack", 2000, pitList.find("New_Wheel") + 4);
+	Technician nutBK("nutRemovedBack", 2000, pitList.find("Wheel_Nut") + 13);
+	Technician removeBK("oldWheelBack", 1000, pitList.find("Old_Wheel") + 13);
+	Technician replaceBK("newWheelBack", 3000, pitList.find("New_Wheel") + 13);
 
-	Technician visor("visor", 2000, pitList.find("Visor"));
+	Technician visor("visor", 1000, pitList.find("Visor"));
 	Technician debris("debris", 2000, pitList.find("Debris"));
-	Technician refuel("refuel", 2000, pitList.find("Refuel"));
+	Technician refuel("refuel", 3000, pitList.find("Refuel"));
 
 	jackingFront.Resume();
 	jackingBack.Resume();
@@ -157,34 +176,45 @@ int main()
 	debris.Resume();
 	refuel.Resume();
 
-	for (;;) {
-		Driver one(1, 1000, { 1, 10 });
-		Driver two(2, 300, { 2, 11 });
-		Driver three(3, 500, { 5, 15 });
-		Driver four(4, 200, { 8, 10, 20 });
-		Driver five(5, 1000, { 10, 14, 18 });
-		Driver six(6, 500, { 12, 15, 19 });
-		Driver seven(7, 300, { 2, 7 });
-		Driver eight(8, 1000, { 6, 9 });
-		Driver nine(9, 300, { 9, 13 });
-		Driver ten(10, 400, { 11, 17 });
+	Driver one(1, 1000, { 1, 10 });
+	Driver two(2, 1100, { 2, 11 });
+	Driver three(3, 900, { 5, 15 });
+	Driver four(4, 1200, { 8, 10, 20 });
+	Driver five(5, 1100, { 10, 14, 18 });
+	Driver six(6, 900, { 12, 15, 19 });
+	Driver seven(7, 1000, { 2, 7 });
+	Driver eight(8, 1020, { 6, 9 });
+	Driver nine(9, 1030, { 9, 13 });
+	Driver ten(10, 1040, { 11, 17 });
 
-		monitorMutex.Wait();
-		MOVE_CURSOR(0, 0);
-		printf(pitList.c_str());
+	one.Resume();
+	two.Resume();
+	three.Resume();
+	four.Resume();
+	five.Resume();
+	six.Resume();
+	seven.Resume();
+	eight.Resume();
+	nine.Resume();
+	ten.Resume();
 
+	monitorMutex.Wait();
+	MOVE_CURSOR(0, 0);
+	printf(pitList.c_str());
+	MOVE_CURSOR(0, 3);
+	printf("|| Car || Lap || In_Pit_Stop ||");
+	monitorMutex.Signal();
 
-		// Pit entry light
-		MOVE_CURSOR(0, 1);
-		printf("%d", pitEntryLight.Read() == true);
-		MOVE_CURSOR(0, 1);
-		printf("%d", pitExitLight.Read() == true);
-
-		MOVE_CURSOR(0, 2);
-		printf("Car Lap In_Pit_Stop");
-		fflush(stdout);
-		monitorMutex.Signal();
-	}
+	one.WaitForThread();
+	two.WaitForThread();
+	three.WaitForThread();
+	four.WaitForThread();
+	five.WaitForThread();
+	six.WaitForThread();
+	seven.WaitForThread();
+	eight.WaitForThread();
+	nine.WaitForThread();
+	ten.WaitForThread();
 
 	return 0;
 }

@@ -28,6 +28,11 @@ public:
 	}
 
 	int main(void) {
+		monitorMutex->Wait();
+		MOVE_CURSOR(this->cursorX, 1);
+		printf("0");
+		fflush(stdout);
+		monitorMutex->Signal();
 		for (;;) {
 			this->task->Wait();
 
@@ -48,7 +53,7 @@ public:
 			monitorMutex->Signal();
 
 			this->task->Signal();
-			Sleep(2000);
+			Sleep(5000);
 		}
 
 		return 0;
