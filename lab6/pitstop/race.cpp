@@ -10,9 +10,9 @@
 CSemaphore nutRemovedFront("nutRemovedFront", 1);
 CSemaphore oldWheelFront("oldWheelFront", 1);
 CSemaphore newWheelFront("newWheelFront", 1);
-CSemaphore nutRemovedBack("nutRemovedBack", 1);;
-CSemaphore oldWheelBack("oldWheelBack", 1);;
-CSemaphore newWheelback("newWheelback", 1);;
+CSemaphore nutRemovedBack("nutRemovedBack", 1);
+CSemaphore oldWheelBack("oldWheelBack", 1);
+CSemaphore newWheelback("newWheelback", 1);
 
 CSemaphore jackingFront("jackingFront", 1);
 CSemaphore jackingBack("jackingBack", 1);
@@ -24,6 +24,9 @@ CSemaphore pitEntryLight("pitEntryLight", 1);
 CSemaphore pitExitLight("pitExitLight", 0);
 
 CMutex monitorMutex("Monitor", 1);
+
+void printCar();
+void printRaceCar();
 
 UINT __stdcall Supervisor(void* args) {
 	// Wait for all mutexes to be available
@@ -65,13 +68,14 @@ UINT __stdcall Supervisor(void* args) {
 			jackingFront.Signal();
 			frontNewWheel = 0;
 			frontComplete = 1;
+			Sleep(200);
 		}
 
 		if (jackingBack.Wait(10) == WAIT_OBJECT_0 && back) {
 			nutRemovedBack.Signal();
 			back = 0;
 			backNut = 1;
-			Sleep(100);
+			Sleep(200);
 		}
 
 		if (nutRemovedBack.Wait(10) == WAIT_OBJECT_0 && backNut) {
@@ -92,6 +96,7 @@ UINT __stdcall Supervisor(void* args) {
 			jackingBack.Signal();
 			backNewWheel = 0;
 			backComplete = 1;
+			Sleep(100);
 		}
 
 		visor.Wait(10);
@@ -113,6 +118,7 @@ UINT __stdcall Supervisor(void* args) {
 			front = 1;
 			jackingBack.Signal();
 			back = 1;
+			Sleep(400);
 		}
 
 		if (frontComplete && backComplete) {
@@ -140,7 +146,7 @@ int main()
 	HWND console = GetConsoleWindow();
 	RECT rect;
 	GetWindowRect(console, &rect);
-	MoveWindow(console, rect.left, rect.top, 1400, 800, TRUE);
+	MoveWindow(console, rect.left, rect.top - 50, 1200, 700, TRUE);
 
 	std::string pitList = "|| Pit_Entry_Light  || Pit_Exit_Light || Refuel || Visor || Debris || Jacking(F)(B) || Wheel_Nut(F)(B) || Old_Wheel(F)(B) || New_Wheel(F)(B) ||";
 	CThread supervisorThread(Supervisor, ACTIVE, NULL);
@@ -204,6 +210,9 @@ int main()
 	printf("|| Car || Lap || In_Pit_Stop ||");
 	monitorMutex.Signal();
 
+	//printCar();
+	printRaceCar();
+
 	one.WaitForThread();
 	two.WaitForThread();
 	three.WaitForThread();
@@ -216,4 +225,43 @@ int main()
 	ten.WaitForThread();
 
 	return 0;
+}
+
+void printRaceCar() {
+	monitorMutex.Wait();
+	MOVE_CURSOR(0, 24);
+
+	cout << endl << "(1): indicates technician is working." << endl;
+	cout << "(0): indicates technician is free." << endl;
+
+	cout << "                                        _.....____......._____.._                                        " << endl;
+	cout << "                                  _..--'    || ======\\ \\========== `-._                                   " << endl;
+	cout << "                         ______.-''         ||        \\ \\             \\ \\`-. _                             " << endl;
+	cout << "                        /_      \\ \\_________||_________\\ \\_____________\\ \\____''_-..__                    " << endl;
+	cout << "     _.-. _             00|      _.----._              |               |          _.._`--. _             " << endl;
+	cout << "  _.(    ) ),--.        00|    .'+..--..+`.   ~ ~ ~ ~  | ~ ~ ~ ~ ~ ~ ~ | ~ ~ ~ .'.---..`.    '-._        " << endl;
+	cout << "(               )-._    \\0|   /++/  __  \\++\\  ~ ~ ~ ~  | (^^^) ~ ~ ~ ~ | ~ ~  /+/  __  \\+\\       0033    " << endl;
+	cout << " ( _________________)     |  |++|  /  \\  |++|          |               |     /+|  /  \\  |+|       \\003   " << endl;
+	cout << "                           \\_|++|  \\__/  |++|__________|_______________|_____|+|  \\__/  |+|__________3   " << endl;
+	cout << "     VROOM VROOM            \\W\\++\\      /++/W_W_W_W_W_W_W_W_W_W_W_W_W_W_W_W_W_\\+\\      /+/_W_W_W_W_W/    " << endl;
+	cout << "                                \\+`===='+/                                     `+`===='+'                " << endl;
+	cout << "                       ===============================================================================" << endl;
+	
+	monitorMutex.Signal();
+}
+
+void printCar() {
+	monitorMutex.Wait();
+	MOVE_CURSOR(0, 26);
+
+	cout << "           _________        " << endl;
+	cout << "          / /  || \\ \\       " << endl;
+	cout << "      ___/ /___||__\\ \\____  " << endl;
+	cout << "= =  /  _          _     () " << endl;
+	cout << "= =  \\_/ \\________/ \\____/  " << endl;
+	cout << "_______\\_/________\\_/_________ " << endl;
+
+	cout << endl << "(1): indicates technician is working." << endl;
+	cout << "(0): indicates technician is free.";
+	monitorMutex.Signal();
 }
