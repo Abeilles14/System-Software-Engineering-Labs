@@ -47,7 +47,7 @@ UINT __stdcall Supervisor(void* args) {
 			nutRemovedFront.Signal();
 			front = 0;
 			frontNut = 1;
-			Sleep(200);
+			Sleep(100);
 		}
 
 		if (nutRemovedFront.Wait(10) == WAIT_OBJECT_0 && frontNut) {
@@ -146,7 +146,7 @@ int main()
 	HWND console = GetConsoleWindow();
 	RECT rect;
 	GetWindowRect(console, &rect);
-	MoveWindow(console, rect.left, rect.top - 50, 1200, 700, TRUE);
+	MoveWindow(console, rect.left, rect.top, 1200, 700, TRUE);
 
 	std::string pitList = "|| Pit_Entry_Light  || Pit_Exit_Light || Refuel || Visor || Debris || Jacking(F)(B) || Wheel_Nut(F)(B) || Old_Wheel(F)(B) || New_Wheel(F)(B) ||";
 	CThread supervisorThread(Supervisor, ACTIVE, NULL);
@@ -207,10 +207,10 @@ int main()
 	MOVE_CURSOR(0, 0);
 	printf(pitList.c_str());
 	MOVE_CURSOR(0, 3);
-	printf("|| Car || Lap || In_Pit_Stop ||");
+	printf("|| Car || Lap || Finished ||");
 	monitorMutex.Signal();
 
-	//printCar();
+	printCar();
 	printRaceCar();
 
 	one.WaitForThread();
@@ -229,10 +229,13 @@ int main()
 
 void printRaceCar() {
 	monitorMutex.Wait();
-	MOVE_CURSOR(0, 24);
+
+	MOVE_CURSOR(0, 15);
 
 	cout << endl << "(1): indicates technician is working." << endl;
 	cout << "(0): indicates technician is free." << endl;
+
+	MOVE_CURSOR(0, 26);
 
 	cout << "                                        _.....____......._____.._                                        " << endl;
 	cout << "                                  _..--'    || ======\\ \\========== `-._                                   " << endl;
@@ -252,14 +255,14 @@ void printRaceCar() {
 
 void printCar() {
 	monitorMutex.Wait();
-	MOVE_CURSOR(0, 26);
+	MOVE_CURSOR(0, 13);
 
-	cout << "           _________        " << endl;
-	cout << "          / /  || \\ \\       " << endl;
-	cout << "      ___/ /___||__\\ \\____  " << endl;
-	cout << "= =  /  _          _     () " << endl;
-	cout << "= =  \\_/ \\________/ \\____/  " << endl;
-	cout << "_______\\_/________\\_/_________ " << endl;
+	cout << "								           _________        " << endl;
+	cout << "								          / /  || \\ \\       " << endl;
+	cout << "								      ___/ /___||__\\ \\____  " << endl;
+	cout << "								= =  /  _          _     () " << endl;
+	cout << "								= =  \\_/ \\________/ \\____/  " << endl;
+	cout << "								_______\\_/________\\_/_________ " << endl;
 
 	cout << endl << "(1): indicates technician is working." << endl;
 	cout << "(0): indicates technician is free.";
