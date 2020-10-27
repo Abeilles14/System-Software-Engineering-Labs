@@ -12,7 +12,7 @@ CSemaphore oldWheelFront("oldWheelFront", 1, 2);
 CSemaphore newWheelFront("newWheelFront", 1, 2);
 CSemaphore nutRemovedBack("nutRemovedBack", 1, 2);
 CSemaphore oldWheelBack("oldWheelBack", 1, 2);
-CSemaphore newWheelback("newWheelback", 1, 2);
+CSemaphore newWheelBack("newWheelBack", 1, 2);
 
 CSemaphore jackingFront("jackingFront", 1);
 CSemaphore jackingBack("jackingBack", 1);
@@ -32,70 +32,92 @@ UINT __stdcall Supervisor(void* args) {
 	// Wait for all mutexes to be available
 	bool front = 0;
 	bool back = 0;
-	bool frontNut = 0;
-	bool frontOldWheel = 0;
-	bool frontNewWheel = 0;
-	bool backNut = 0;
-	bool backOldWheel = 0;
-	bool backNewWheel = 0;
-	int frontComplete = 0;
-	int backComplete = 0;
+	int frontNut = 0;
+	int frontOldWheel = 0;
+	int frontNewWheel = 0;
+	int backNut = 0;
+	int backOldWheel = 0;
+	int backNewWheel = 0;
+	bool frontComplete = 0;
+	bool backComplete = 0;
 	bool busy = 0;
 
 	for (;;) {
-		if (jackingFront.Wait(10) == WAIT_OBJECT_0 && front) {
+		if (jackingFront.Wait(10) == WAIT_TIMEOUT) {
+
+		}
+		else if (front) {
 			nutRemovedFront.Signal(2);
 			front = 0;
-			frontNut = 1;
+			frontNut = 2;
 			Sleep(200);
 		}
 
-		if (nutRemovedFront.Wait(10) == WAIT_OBJECT_0 && frontNut) {
+		if (nutRemovedFront.Wait(10) == WAIT_TIMEOUT) {
+
+		}
+		else if (frontNut) {
 			oldWheelFront.Signal();
-			frontNut = 0;
-			frontOldWheel = 1;
+			frontNut--;
+			frontOldWheel++;
 			Sleep(200);
 		}
 
-		if (oldWheelFront.Wait(10) == WAIT_OBJECT_0 && frontOldWheel) {
+		if (oldWheelFront.Wait(10) == WAIT_TIMEOUT) {
+
+		}
+		else if (frontOldWheel) {
 			newWheelFront.Signal();
-			frontOldWheel = 0;
-			frontNewWheel = 1;
+			frontOldWheel--;
+			frontNewWheel++;
 			Sleep(200);
 		}
 
-		if (newWheelFront.Wait(10) == WAIT_OBJECT_0 && frontNewWheel) {
+		if (newWheelFront.Wait(10) == WAIT_TIMEOUT) {
+
+		}
+		else if (frontNewWheel == 2) {
 			jackingFront.Signal();
 			frontNewWheel = 0;
-			frontComplete++;
+			frontComplete = 1;
 			Sleep(200);
 		}
 
-		if (jackingBack.Wait(10) == WAIT_OBJECT_0 && back) {
+		if (jackingBack.Wait(10) == WAIT_TIMEOUT) {
+
+		}
+		else if (back) {
 			nutRemovedBack.Signal(2);
 			back = 0;
-			backNut = 1;
+			backNut = 2;
 			Sleep(200);
 		}
 
-		if (nutRemovedBack.Wait(10) == WAIT_OBJECT_0 && backNut) {
+		if (nutRemovedBack.Wait(10) == WAIT_TIMEOUT) {
+		}
+		else if (backNut) {
 			oldWheelBack.Signal();
-			backNut = 0;
-			backOldWheel = 1;
+			backNut--;
+			backOldWheel++;
 			Sleep(200);
 		}
 
-		if (oldWheelBack.Wait(10) == WAIT_OBJECT_0 && backOldWheel) {
-			newWheelback.Signal();
-			backOldWheel = 0;
-			backNewWheel = 1;
+		if (oldWheelBack.Wait(10) == WAIT_TIMEOUT) {
+		}
+		else if (backOldWheel) {
+			newWheelBack.Signal();
+			backOldWheel--;
+			backNewWheel++;
 			Sleep(200);
 		}
 
-		if (newWheelback.Wait(10) == WAIT_OBJECT_0 && backNewWheel) {
+		if (newWheelBack.Wait(10) == WAIT_TIMEOUT) {
+
+		}
+		else if (backNewWheel == 2) {
 			jackingBack.Signal();
 			backNewWheel = 0;
-			backComplete++;
+			backComplete = 1;
 			Sleep(200);
 		}
 
@@ -128,7 +150,7 @@ UINT __stdcall Supervisor(void* args) {
 			Sleep(100);
 		}
 
-		if (frontComplete == 2 && backComplete == 2) {
+		if (frontComplete && backComplete) {
 			pitExitLight.Signal();
 			Sleep(100);
 			pitEntryLight.Signal();
@@ -160,22 +182,22 @@ int main()
 	std::string pitList = "|| Pit_Entry_Light  || Pit_Exit_Light || Refuel || Visor || Debris || (F) Jacking (B) || (FL FR) Wheel_Nut (BL BR) || (FL FR) Old_Wheel (BL BR) || (FL FR) New_Wheel (BL BR) ||";
 	CThread supervisorThread(Supervisor, ACTIVE, NULL);
 
-	Technician jackingFront("jackingFront", 1000, pitList.find("Jacking") - 3, 1);
-	Technician jackingBack("jackingBack", 1000, pitList.find("Jacking") + 9, 1);
+	Technician jackingFront("jackingFront", 500, pitList.find("Jacking") - 3, 1);
+	Technician jackingBack("jackingBack", 500, pitList.find("Jacking") + 9, 1);
 
-	Technician nutFWL("nutRemovedFront", 2000, pitList.find("Wheel_Nut") - 7, 2);
-	Technician removeFWL("oldWheelFront", 1000, pitList.find("Old_Wheel") - 7, 2);
-	Technician replaceFWL("newWheelFront", 3000, pitList.find("New_Wheel") - 7, 2);
-	Technician nutFWR("nutRemovedFront", 2000, pitList.find("Wheel_Nut") - 3, 2);
-	Technician removeFWR("oldWheelFront", 1000, pitList.find("Old_Wheel") - 3, 2);
-	Technician replaceFWR("newWheelFront", 3000, pitList.find("New_Wheel") - 3, 2);
+	Technician nutFWL("nutRemovedFront", 1000, pitList.find("Wheel_Nut") - 7, 2);
+	Technician removeFWL("oldWheelFront", 500, pitList.find("Old_Wheel") - 7, 2);
+	Technician replaceFWL("newWheelFront", 1500, pitList.find("New_Wheel") - 7, 2);
+	Technician nutFWR("nutRemovedFront", 1000, pitList.find("Wheel_Nut") - 3, 2);
+	Technician removeFWR("oldWheelFront", 500, pitList.find("Old_Wheel") - 3, 2);
+	Technician replaceFWR("newWheelFront", 1500, pitList.find("New_Wheel") - 3, 2);
 
-	Technician nutBKL("nutRemovedBack", 2000, pitList.find("Wheel_Nut") + 11, 2);
-	Technician removeBKL("oldWheelBack", 3000, pitList.find("Old_Wheel") + 11, 2);
-	Technician replaceBKL("newWheelBack", 1000, pitList.find("New_Wheel") + 11, 2);
-	Technician nutBKR("nutRemovedBack", 2000, pitList.find("Wheel_Nut") + 15, 2);
-	Technician removeBKR("oldWheelBack", 3000, pitList.find("Old_Wheel") + 15, 2);
-	Technician replaceBKR("newWheelBack", 1000, pitList.find("New_Wheel") + 15, 2);
+	Technician nutBKL("nutRemovedBack", 1000, pitList.find("Wheel_Nut") + 11, 2);
+	Technician removeBKL("oldWheelBack", 1500, pitList.find("Old_Wheel") + 11, 2);
+	Technician replaceBKL("newWheelBack", 500, pitList.find("New_Wheel") + 11, 2);
+	Technician nutBKR("nutRemovedBack", 1000, pitList.find("Wheel_Nut") + 15, 2);
+	Technician removeBKR("oldWheelBack", 1500, pitList.find("Old_Wheel") + 15, 2);
+	Technician replaceBKR("newWheelBack", 500, pitList.find("New_Wheel") + 15, 2);
 
 	Technician visor("visor", 1000, pitList.find("Visor"),1);
 	Technician debris("debris", 2000, pitList.find("Debris"),1);
