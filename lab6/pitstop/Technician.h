@@ -18,8 +18,8 @@ private:
 	CMutex* monitorMutex;
 
 public:
-	Technician(std::string mutexName, int taskTime, int cursorX) {
-		this->task = new CSemaphore(mutexName, 0);
+	Technician(std::string mutexName, int taskTime, int cursorX, int resources) {
+		this->task = new CSemaphore(mutexName, 0, resources);
 		this->taskTime = taskTime;
 		this->role = role;
 		this->cursorX = cursorX;

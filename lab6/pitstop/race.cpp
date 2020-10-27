@@ -7,12 +7,12 @@
 #define NUMBER_OF_PITSTOPS 10
 #define NUMBER_OF_LAPS 20
 
-CSemaphore nutRemovedFront("nutRemovedFront", 1);
-CSemaphore oldWheelFront("oldWheelFront", 1);
-CSemaphore newWheelFront("newWheelFront", 1);
-CSemaphore nutRemovedBack("nutRemovedBack", 1);
-CSemaphore oldWheelBack("oldWheelBack", 1);
-CSemaphore newWheelback("newWheelback", 1);
+CSemaphore nutRemovedFront("nutRemovedFront", 1, 2);
+CSemaphore oldWheelFront("oldWheelFront", 1, 2);
+CSemaphore newWheelFront("newWheelFront", 1, 2);
+CSemaphore nutRemovedBack("nutRemovedBack", 1, 2);
+CSemaphore oldWheelBack("oldWheelBack", 1, 2);
+CSemaphore newWheelback("newWheelback", 1, 2);
 
 CSemaphore jackingFront("jackingFront", 1);
 CSemaphore jackingBack("jackingBack", 1);
@@ -38,16 +38,16 @@ UINT __stdcall Supervisor(void* args) {
 	bool backNut = 0;
 	bool backOldWheel = 0;
 	bool backNewWheel = 0;
-	bool frontComplete = 0;
-	bool backComplete = 0;
+	int frontComplete = 0;
+	int backComplete = 0;
 	bool busy = 0;
 
 	for (;;) {
 		if (jackingFront.Wait(10) == WAIT_OBJECT_0 && front) {
-			nutRemovedFront.Signal();
+			nutRemovedFront.Signal(2);
 			front = 0;
 			frontNut = 1;
-			Sleep(50);
+			Sleep(200);
 		}
 
 		if (nutRemovedFront.Wait(10) == WAIT_OBJECT_0 && frontNut) {
@@ -67,12 +67,12 @@ UINT __stdcall Supervisor(void* args) {
 		if (newWheelFront.Wait(10) == WAIT_OBJECT_0 && frontNewWheel) {
 			jackingFront.Signal();
 			frontNewWheel = 0;
-			frontComplete = 1;
+			frontComplete++;
 			Sleep(200);
 		}
 
 		if (jackingBack.Wait(10) == WAIT_OBJECT_0 && back) {
-			nutRemovedBack.Signal();
+			nutRemovedBack.Signal(2);
 			back = 0;
 			backNut = 1;
 			Sleep(200);
@@ -95,13 +95,16 @@ UINT __stdcall Supervisor(void* args) {
 		if (newWheelback.Wait(10) == WAIT_OBJECT_0 && backNewWheel) {
 			jackingBack.Signal();
 			backNewWheel = 0;
-			backComplete = 1;
+			backComplete++;
 			Sleep(200);
 		}
 
 		visor.Wait(10);
+		Sleep(10);
 		debris.Wait(10);
+		Sleep(10);
 		refuel.Wait(10);
+		Sleep(10);
 		// Wait for technicians to be available again
 		// Wait will decrement all of the resources, making them zero.
 
@@ -111,17 +114,21 @@ UINT __stdcall Supervisor(void* args) {
 			Sleep(100);
 			// Refueling, visor, and debris technicians begin work
 			visor.Signal();
+			Sleep(10);
 			debris.Signal();
+			Sleep(10);
 			refuel.Signal();
-
+			Sleep(10);
 			jackingFront.Signal();
+			Sleep(10);
 			front = 1;
 			jackingBack.Signal();
+			Sleep(10);
 			back = 1;
 			Sleep(100);
 		}
 
-		if (frontComplete && backComplete) {
+		if (frontComplete == 2 && backComplete == 2) {
 			pitExitLight.Signal();
 			Sleep(100);
 			pitEntryLight.Signal();
@@ -129,6 +136,7 @@ UINT __stdcall Supervisor(void* args) {
 			busy = 0;
 			backComplete = 0;
 			frontComplete = 0;
+			Sleep(100);
 		}
 
 
@@ -138,6 +146,7 @@ UINT __stdcall Supervisor(void* args) {
 		MOVE_CURSOR(23, 1);
 		printf("%d", !busy);
 		monitorMutex.Signal();
+		Sleep(100);
 	}
 }
 
@@ -146,36 +155,48 @@ int main()
 	HWND console = GetConsoleWindow();
 	RECT rect;
 	GetWindowRect(console, &rect);
-	MoveWindow(console, rect.left, rect.top, 1200, 700, TRUE);
+	MoveWindow(console, rect.left, rect.top, 1400, 700, TRUE);
 
-	std::string pitList = "|| Pit_Entry_Light  || Pit_Exit_Light || Refuel || Visor || Debris || Jacking(F)(B) || Wheel_Nut(F)(B) || Old_Wheel(F)(B) || New_Wheel(F)(B) ||";
+	std::string pitList = "|| Pit_Entry_Light  || Pit_Exit_Light || Refuel || Visor || Debris || (F) Jacking (B) || (FL FR) Wheel_Nut (BL BR) || (FL FR) Old_Wheel (BL BR) || (FL FR) New_Wheel (BL BR) ||";
 	CThread supervisorThread(Supervisor, ACTIVE, NULL);
 
-	Technician jackingFront("jackingFront", 1000, pitList.find("Jacking") + 8);
-	Technician jackingBack("jackingBack", 1000, pitList.find("Jacking") + 11);
+	Technician jackingFront("jackingFront", 1000, pitList.find("Jacking") - 3, 1);
+	Technician jackingBack("jackingBack", 1000, pitList.find("Jacking") + 9, 1);
 
-	Technician nutFW("nutRemovedFront", 2000, pitList.find("Wheel_Nut") + 10);
-	Technician removeFW("oldWheelFront", 1000, pitList.find("Old_Wheel") + 10);
-	Technician replaceFW("newWheelFront", 3000, pitList.find("New_Wheel") + 10);
+	Technician nutFWL("nutRemovedFront", 2000, pitList.find("Wheel_Nut") - 7, 2);
+	Technician removeFWL("oldWheelFront", 1000, pitList.find("Old_Wheel") - 7, 2);
+	Technician replaceFWL("newWheelFront", 3000, pitList.find("New_Wheel") - 7, 2);
+	Technician nutFWR("nutRemovedFront", 2000, pitList.find("Wheel_Nut") - 3, 2);
+	Technician removeFWR("oldWheelFront", 1000, pitList.find("Old_Wheel") - 3, 2);
+	Technician replaceFWR("newWheelFront", 3000, pitList.find("New_Wheel") - 3, 2);
 
-	Technician nutBK("nutRemovedBack", 2000, pitList.find("Wheel_Nut") + 13);
-	Technician removeBK("oldWheelBack", 3000, pitList.find("Old_Wheel") + 13);
-	Technician replaceBK("newWheelBack", 1000, pitList.find("New_Wheel") + 13);
+	Technician nutBKL("nutRemovedBack", 2000, pitList.find("Wheel_Nut") + 11, 2);
+	Technician removeBKL("oldWheelBack", 3000, pitList.find("Old_Wheel") + 11, 2);
+	Technician replaceBKL("newWheelBack", 1000, pitList.find("New_Wheel") + 11, 2);
+	Technician nutBKR("nutRemovedBack", 2000, pitList.find("Wheel_Nut") + 15, 2);
+	Technician removeBKR("oldWheelBack", 3000, pitList.find("Old_Wheel") + 15, 2);
+	Technician replaceBKR("newWheelBack", 1000, pitList.find("New_Wheel") + 15, 2);
 
-	Technician visor("visor", 1000, pitList.find("Visor"));
-	Technician debris("debris", 2000, pitList.find("Debris"));
-	Technician refuel("refuel", 3000, pitList.find("Refuel"));
+	Technician visor("visor", 1000, pitList.find("Visor"),1);
+	Technician debris("debris", 2000, pitList.find("Debris"),1);
+	Technician refuel("refuel", 3000, pitList.find("Refuel"),1);
 
 	jackingFront.Resume();
 	jackingBack.Resume();
 
-	nutFW.Resume();
-	removeFW.Resume();
-	replaceFW.Resume();
+	nutFWL.Resume();
+	removeFWL.Resume();
+	replaceFWL.Resume();
+	nutFWR.Resume();
+	removeFWR.Resume();
+	replaceFWR.Resume();
 
-	nutBK.Resume();
-	removeBK.Resume();
-	replaceBK.Resume();
+	nutBKL.Resume();
+	removeBKL.Resume();
+	replaceBKL.Resume();
+	nutBKR.Resume();
+	removeBKR.Resume();
+	replaceBKR.Resume();
 
 	visor.Resume();
 	debris.Resume();
@@ -243,11 +264,11 @@ void printRaceCar() {
 	cout << "                        /_      \\ \\_________||_________\\ \\_____________\\ \\____''_-..__                    " << endl;
 	cout << "     _.-. _             00|      _.----._              |               |          _.._`--. _             " << endl;
 	cout << "  _.(    ) ),--.        00|    .'+..--..+`.   ~ ~ ~ ~  | ~ ~ ~ ~ ~ ~ ~ | ~ ~ ~ .'.---..`.    '-._        " << endl;
-	cout << "(               )-._    \\0|   /++/  __  \\++\\  ~ ~ ~ ~  | (^^^) ~ ~ ~ ~ | ~ ~  /+/  __  \\+\\       0033    " << endl;
-	cout << " ( _________________)  ___|  |++|  /  \\  |++|          |               |     /+|  /  \\  |+|       \\003   " << endl;
+	cout << "(               )-._   \\0|   /++/  __  \\++\\  ~ ~ ~ ~  | (^^^) ~ ~ ~ ~ | ~ ~  /+/  __  \\+\\       0033    " << endl;
+	cout << " ( _________________) ___|  |++|  /  \\  |++|          |               |     /+|  /  \\  |+|       \\003   " << endl;
 	cout << "                       \___\\_|++|  \\__/  |++|__________|_______________|_____|+|  \\__/  |+|__________3   " << endl;
-	cout << "     VROOM VROOM            \\W\\++\\      /++/W_W_W_W_W_W_W_W_W_W_W_W_W_W_W_W_W_\\+\\      /+/_W_W_W_W_W/    " << endl;
-	cout << "                                \\+`===='+/                                     `+`===='+'                " << endl;
+	cout << "     VROOM VROOM           \\W\\++\\      /++/W_W_W_W_W_W_W_W_W_W_W_W_W_W_W_W_W_\\+\\      /+/_W_W_W_W_W/    " << endl;
+	cout << "                               \\+`===='+/                                     `+`===='+'                " << endl;
 	cout << "==========================================================================================================" << endl;
 	
 	monitorMutex.Signal();
