@@ -8,19 +8,21 @@
 class Elevator : public ActiveClass
 {
 private:
-	int taskTime;
-	int cursorX;
-	int pitstopNum;
+	struct elevatorStatus {
+		int currentFloor;
+		std::string headingDirection;
+		std::string doorStatus;
+		bool outOfOrder;
+	};
 
-	std::string role;
-	std::string message;
+	int cursorX;
 
 	CSemaphore* task;
 	CMutex* monitorMutex;
 	CMailbox* mailBox;
 
 public:
-	Technician(std::string elevatorName, std::string monitorName, std::string mailBoxName) {
+	Elevator(std::string elevatorName, std::string monitorName, std::string mailBoxName) {
 		this->task = new CSemaphore(elevatorName, 1);
 		this->monitorMutex = new CMutex(monitorName, 1);
 		this->mailBox = new CMailbox();
