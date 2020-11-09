@@ -1,39 +1,50 @@
 #include "../../rt.h"
 #include "Elevator.h"
+#include "constants.h"
 
 using namespace std;
 
-struct elevatorStatus {
-	int currentFloor;
-	std::string headingDirection;
-	std::string doorStatus;
-	bool outOfOrder;
-};
+// Elevators
+UINT __stdcall elevatorThread(void* args) {
+	UINT whichElevator = *(UINT*)(args);
 
-struct	elevatorStatus* elevatorStatusPtr1;
-struct	elevatorStatus* elevatorStatusPtr2;
+	CSemaphore IOProducer("ElevatorIOProducer" + whichElevator, 0);
+	CSemaphore IOConsumer("ElevatorIOConsumer" + whichElevator, 0);
+	CSemaphore DispatcherProducer("ElevatorDispatcherProducer" + whichElevator, 0);
+	CSemaphore ElevatorDispatcherConsumerIOProducor("ElevatorDispatcherConsumer" + whichElevator, 0);
 
-UINT __stdcall Dispatcher(void* args) {
+	struct	elevatorStatus* elevatorStatusPtr;
 
-	//	Create a datapool and then get a pointer to it
+	CDataPool dpStatus("elevatorStatusPtr" + whichElevator, sizeof(struct elevatorStatus));
 
-	CDataPool dpStatus1(" elevatorStatusPtr1", sizeof(struct elevatorStatus));
-	CDataPool dpStatus2(" elevatorStatusPtr2", sizeof(struct elevatorStatus));
-	
-	elevatorStatusPtr1 = (struct elevatorStatus*)dpStatus1.LinkDataPool();
-	elevatorStatusPtr2 = (struct elevatorStatus*)dpStatus2.LinkDataPool();
+	elevatorStatusPtr = (struct elevatorStatus*)dpStatus.LinkDataPool();
 
-	// create elevator active classes here?
 
-}
 
-UINT __stdcall IO(void* args) {
+	for (;;) {
+
+	}
 
 }
 
 int main()
 {
-	CThread dispatcherThread(Dispatcher, ACTIVE, NULL);
+
+	CProcess p1("IO.exe",	// pathlist to child program executable
+		NORMAL_PRIORITY_CLASS,
+		OWN_WINDOW,
+		ACTIVE
+	);
+
+	CProcess p2("Dispatcher.exe",	// pathlist to child program executable
+		NORMAL_PRIORITY_CLASS,
+		PARENT_WINDOW,
+		ACTIVE
+	);
+
+	p2.WaitForProcess();
+
+
 
 	return 0;
 }
