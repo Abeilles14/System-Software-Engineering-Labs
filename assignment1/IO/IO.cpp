@@ -3,7 +3,7 @@
 #include "../../rt.h"
 #include <chrono>
 #include <ctime>
-#include "constants.h"
+#include "../constants.h"
 
 UINT __stdcall keyboardThread(void* args) {
 	struct IOData* dataPointer;

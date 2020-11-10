@@ -1,5 +1,6 @@
 #include "../../rt.h"
 #include "Elevator.h"
+#include "../constants.h"
 
 using namespace std;
 
@@ -17,8 +18,6 @@ UINT __stdcall elevatorThread(void* args) {
 	CDataPool dpStatus("elevatorStatusPtr" + whichElevator, sizeof(struct elevatorStatus));
 
 	elevatorStatusPtr = (struct elevatorStatus*)dpStatus.LinkDataPool();
-
-
 
 	for (;;) {
 
