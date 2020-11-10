@@ -5,10 +5,6 @@
 #include <ctime>
 #include "../constants.h"
 
-// monitor names
-std::string monitorElevator1 = "elevator1";
-std::string monitorElevator2 = "elevator2";
-
 UINT __stdcall keyboardThread(void* args) {
 	struct IOData* dataPointer;
 	dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
@@ -16,7 +12,12 @@ UINT __stdcall keyboardThread(void* args) {
 
 	for (;;) {
 
-		cout << "Input new data into pipeline\n";
+		terminalOutput.Wait();
+		MOVE_CURSOR(0, 0);
+		cout << "Input new data into pipeline\n";		
+		MOVE_CURSOR(0, 1);
+		terminalOutput.Signal();
+
 		// Waiting for input...
 		std::getline(std::cin, input);
 
@@ -51,18 +52,27 @@ UINT __stdcall keyboardThread(void* args) {
 
 UINT __stdcall elevatorStatusIOThread1(void* args) {
 	Named ElevatorMonitor1(monitorElevator1, 1);
+	elevatorStatus currentStatus;
 
 	for(;;) {
-		ElevatorIOConsumer1.Wait();
-		ElevatorDispatcherConsumer1.Wait();
+
+		ElevatorIOProducer1.Wait();
+		ElevatorMonitor1.get_elevator_status(currentStatus);
+		ElevatorIOConsumer1.Signal();
+
+
+
+		// Display on terminal output
+		terminalOutput.Wait();
+		MOVE_CURSOR(0, 5);
+		cout << "Elevator 1 on floor " << currentStatus.currentFloor;
+		MOVE_CURSOR(0, 1);
+		terminalOutput.Signal();
 
 		// produce data for IO C1 (done in elevator in dispatcher)
 
-		ElevatorIOProducer1.Signal();
+		
 
-		// produce data for Dispatcher C1 (done in elevator in dispatcher)
-
-		ElevatorIOProducer2.Signal();
 	}
 
 	return 0;
@@ -70,18 +80,21 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 
 UINT __stdcall elevatorStatusIOThread2(void* args) {
 	Named ElevatorMonitor2(monitorElevator2, 2);
+	elevatorStatus currentStatus;
 
 	for(;;) {
-		ElevatorIOConsumer2.Wait();
-		ElevatorDispatcherConsumer2.Wait();
+		ElevatorIOProducer2.Wait();
+		ElevatorMonitor2.get_elevator_status(currentStatus);
+		ElevatorIOConsumer2.Signal();
 
-		// produce data for IO C2 (done in elevator in dispatcher)
 
-		ElevatorIOProducer1.Signal();
 
-		// produce data for Dispatcher C2 (done in elevator in dispatcher)
-
-		ElevatorIOProducer2.Signal();
+		// Display on terminal output
+		terminalOutput.Wait();
+		MOVE_CURSOR(0, 6);
+		cout << "Elevator 2 on floor " << currentStatus.currentFloor;
+		MOVE_CURSOR(0, 1);
+		terminalOutput.Signal();
 	}
 
 	return 0;
