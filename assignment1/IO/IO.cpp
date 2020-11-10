@@ -5,6 +5,10 @@
 #include <ctime>
 #include "../constants.h"
 
+// monitor names
+std::string monitorElevator1 = "elevator1";
+std::string monitorElevator2 = "elevator2";
+
 UINT __stdcall keyboardThread(void* args) {
 	struct IOData* dataPointer;
 	dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
@@ -47,11 +51,33 @@ UINT __stdcall keyboardThread(void* args) {
 
 UINT __stdcall elevatorThread1(void* args) {
 	// Code to Get_Elevator_Status from 1 and display on monitor here
+	
+	Named ElevatorMonitor1(monitorElevator1, 1);
+
+	for(;;) {
+		ElevatorIOConsumer1.Wait();
+		ElevatorDispatcherConsumer1.Wait();
+
+
+		ElevatorIOProducer1.Signal();
+	}
+
 	return 0;
 }
 
 UINT __stdcall elevatorThread2(void* args) {
 	// Code to Get_Elevator_Status from 2 and display on monitor here
+
+	Named ElevatorMonitor2(monitorElevator2, 2);
+
+	for(;;) {
+		ElevatorIOConsumer2.Wait();
+		ElevatorDispatcherConsumer2.Wait();
+
+
+		ElevatorIOProducer2.Signal();
+	}
+
 	return 0;
 }
 

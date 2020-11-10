@@ -17,6 +17,10 @@ UINT waitingFloor;
 // 0 = down, 1 = up
 bool waitingDirection;
 
+// monitor names
+std::string monitorElevator1 = "elevator1";
+std::string monitorElevator2 = "elevator2";
+
 // Threads
 UINT __stdcall commandThread(void* args);
 UINT __stdcall elevatorThread(void* args);
@@ -36,7 +40,10 @@ int main() {
 	);
 
 	// INSERT LOGIC TO DETERMINE WHICH ELEVATOR TO SEND A COMMAND TO
-	Named Elevator2Monitor;
+
+	// named monitors
+	Named ElevatorMonitor1(monitorElevator1, 1);
+	Named ElevatorMonitor2(monitorElevator2, 2);
 
 	IOProcess.WaitForProcess();
 
@@ -49,7 +56,14 @@ int main() {
 
 // Elevators
 UINT __stdcall elevatorThread(void* args) {
-	
+	UINT elevatorNumber = *(UINT*)(args);
+	Named monitor("elevator" + elevatorNumber, elevatorNumber);
+	CSemaphore ElevatorIOProducer("ElevatorIOProducer" + elevatorNumber, 0, 1);
+	CSemaphore ElevatorIOConsumer1("ElevatorIOConsumer" + elevatorNumber, 0, 1);
+	CSemaphore ElevatorDispatcherProducer("ElevatorDispatcherProducer" + elevatorNumber, 0, 1);
+	CSemaphore ElevatorDispatcherConsumer("ElevatorDispatcherConsumer" + elevatorNumber, 0, 1);
+
+
 	CMailbox elevatorMailbox;
 	UINT message;
 
@@ -87,6 +101,8 @@ UINT __stdcall elevatorThread(void* args) {
 				currentStatus.headingDirection = 0;
 				currentStatus.currentFloor--;
 			}
+			monitor.update_elevator_status(currentStatus);
+
 		}
 
 	
