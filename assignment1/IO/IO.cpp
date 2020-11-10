@@ -56,11 +56,11 @@ UINT __stdcall elevatorThread2(void* args) {
 }
 
 int main() {
-	CThread thread1(keyboardThread, ACTIVE, NULL);
-	CThread thread2(elevatorThread1, ACTIVE, NULL);
-	CThread thread3(elevatorThread2, ACTIVE, NULL);
+	CThread keyboardThread(keyboardThread, ACTIVE, NULL);
+	CThread elevatorThread1(elevatorThread1, ACTIVE, NULL);
+	CThread elevatorThread2(elevatorThread2, ACTIVE, NULL);
 
-	thread1.WaitForThread();
+	keyboardThread.WaitForThread();
 
 	return 0;
 }

@@ -23,9 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Elevator.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\constants.h">
       <Filter>Header Files</Filter>
     </ClInclude>
