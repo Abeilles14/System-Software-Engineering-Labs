@@ -54,6 +54,12 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 	Named ElevatorMonitor1(monitorElevator1, 1);
 	elevatorStatus currentStatus;
 
+	terminalOutput.Wait();
+	MOVE_CURSOR(0, 5);
+	cout << "Elevator 1 on floor " << 0;
+	MOVE_CURSOR(0, 1);
+	terminalOutput.Signal();
+
 	for(;;) {
 
 		ElevatorIOProducer1.Wait();
@@ -70,9 +76,6 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 		terminalOutput.Signal();
 
 		// produce data for IO C1 (done in elevator in dispatcher)
-
-		
-
 	}
 
 	return 0;
@@ -81,6 +84,12 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 UINT __stdcall elevatorStatusIOThread2(void* args) {
 	Named ElevatorMonitor2(monitorElevator2, 2);
 	elevatorStatus currentStatus;
+
+	terminalOutput.Wait();
+	MOVE_CURSOR(0, 6);
+	cout << "Elevator 2 on floor " << 0;
+	MOVE_CURSOR(0, 1);
+	terminalOutput.Signal();
 
 	for(;;) {
 		ElevatorIOProducer2.Wait();

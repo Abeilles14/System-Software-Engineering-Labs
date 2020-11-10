@@ -33,8 +33,8 @@ int main() {
 	CThread elevatorThread1(elevatorThread, ACTIVE, &elevatorNumberOne);
 	CThread elevatorThread2(elevatorThread, ACTIVE, &elevatorNumberTwo);
 
-	//CThread elevatorDispatcherThread1(elevatorStatusThread1, ACTIVE, NULL);
-	//CThread elevatorDispatcherThread2(elevatorStatusThread2, ACTIVE, NULL);
+	CThread elevatorDispatcherThread1(elevatorStatusThread1, ACTIVE, NULL);
+	CThread elevatorDispatcherThread2(elevatorStatusThread2, ACTIVE, NULL);
 
 	CProcess IOProcess("IO.exe",	// pathlist to child program executable
 		NORMAL_PRIORITY_CLASS,
@@ -60,6 +60,13 @@ int main() {
 			currentCommand = noCommand;
 			break;
 
+		case requestUp:
+			// INSERT LOGIC FOR AN UP REQUEST. Probably compares current/destination floor of elevator with source of request
+			break;
+
+		case requestDown:
+			// INSERT LOGIC FOR AN DOWN REQUEST. Probably compares current/destination floor of elevator with source of request
+			break;
 
 		case noCommand:
 		default:
@@ -128,11 +135,11 @@ UINT __stdcall elevatorThread(void* args) {
 				currentStatus.currentFloor--;
 				cout << "elevator " << elevatorNumber << " falling\n";
 			}
-			//cout << "Getting stuck here\n";
+
 			ElevatorIOConsumer.Wait();
-			//ElevatorDispatcherConsumer.Wait();
+			ElevatorDispatcherConsumer.Wait();
 			ElevatorMonitor.update_elevator_status(currentStatus);
-			//ElevatorDispatcherProducer.Signal();
+			ElevatorDispatcherProducer.Signal();
 			ElevatorIOProducer.Signal();
 		}
 	}
@@ -160,11 +167,11 @@ UINT __stdcall elevatorStatusThread2(void* args) {
 	elevatorStatus currentStatus;
 
 	for (;;) {
-		ElevatorDispatcherProducer1.Wait();
+		ElevatorDispatcherProducer2.Wait();
 
 		ElevatorMonitor2.get_elevator_status(currentStatus);
 
-		ElevatorDispatcherConsumer1.Signal();
+		ElevatorDispatcherConsumer2.Signal();
 
 		elevator2 = currentStatus;
 	}
@@ -189,13 +196,13 @@ UINT __stdcall commandThread(void* args) {
 		// Inside the elevator
 		case '1':
 			elevator1Dest = (UINT)(dataPointer->input2 - '0');
-			cout << "Elevator 1 dest:" << elevator1Dest << endl;
+			//cout << "Elevator 1 dest:" << elevator1Dest << endl;
 			currentCommand = firstElevator;
 			break;
 
 		case '2':
 			elevator2Dest = (UINT)(dataPointer->input2 - '0');
-			cout << "Elevator 2 dest:" << elevator2Dest << endl;;
+			//cout << "Elevator 2 dest:" << elevator2Dest << endl;;
 			currentCommand = secondElevator;
 			break;
 
@@ -203,14 +210,14 @@ UINT __stdcall commandThread(void* args) {
 		case 'u':
 			waitingFloor = (UINT)(dataPointer->input2 - '0');
 			waitingDirection = 1;
-			cout << "Elevator requested on floor " << waitingFloor << " to go up" << endl;;
+			//cout << "Elevator requested on floor " << waitingFloor << " to go up" << endl;;
 			currentCommand = requestUp;
 			break;
 
 		case 'd':
 			waitingFloor = (UINT)(dataPointer->input2 - '0');
 			waitingDirection = 0;
-			cout << "Elevator requested on floor " << waitingFloor << " to go down" << endl;;
+			//cout << "Elevator requested on floor " << waitingFloor << " to go down" << endl;;
 			currentCommand = requestDown;
 			break;
 
