@@ -1,11 +1,9 @@
 #include "../../rt.h"
-#include "../constants.h"
 
 using namespace std;
 
 int main()
 {
-
 
 	return 0;
 }
@@ -76,7 +74,6 @@ cout << R"(                            _II__|
 			|= ==|___________|== |___________|= ==|
 			|====|MMMMMMMMMMM|===|MMMMMMMMMMM|====|)"
 }
-
 
 void drawPassengers(int cursorX, int cursorY, int number) {
 	cout << number;

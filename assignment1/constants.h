@@ -35,8 +35,15 @@ CSemaphore ElevatorDispatcherProducer2("ElevatorDispatcherProducer2", 0, 1);
 CSemaphore ElevatorDispatcherConsumer1("ElevatorDispatcherConsumer1", 1, 1);
 CSemaphore ElevatorDispatcherConsumer2("ElevatorDispatcherConsumer2", 1, 1);
 
-
+// Datapools
 CDataPool dpIoDispatcher("dpIoDispatcher", sizeof(struct IOData));
+
+// Terminal output mutex
+CMutex terminalOutput("TerminalOutput", 1);
+
+// monitor names
+std::string monitorElevator1 = "elevator1";
+std::string monitorElevator2 = "elevator2";
 
 // Objects
 class Named {
@@ -75,4 +82,13 @@ public:
 
 		this->sharedMutex->Signal();
 	}
+};
+
+// Enumerated
+enum elevatorCommand {
+	noCommand,
+	firstElevator,
+	secondElevator,
+	requestUp,
+	requestDown
 };
