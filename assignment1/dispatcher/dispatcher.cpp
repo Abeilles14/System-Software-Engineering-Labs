@@ -33,6 +33,9 @@ int main() {
 	CThread elevatorThread1(elevatorThread, ACTIVE, &elevatorNumberOne);
 	CThread elevatorThread2(elevatorThread, ACTIVE, &elevatorNumberTwo);
 
+	CThread elevatorStatusDispatcherThread1(elevatorStatusDispatcherThread1, ACTIVE, NULL);
+	CThread elevatorStatusDispatcherThread2(elevatorStatusDispatcherThread2, ACTIVE, NULL);
+
 	CProcess IOProcess("IO.exe",	// pathlist to child program executable
 		NORMAL_PRIORITY_CLASS,
 		OWN_WINDOW,
@@ -57,12 +60,14 @@ int main() {
 // Elevators
 UINT __stdcall elevatorThread(void* args) {
 	UINT elevatorNumber = *(UINT*)(args);
-	Named monitor("elevator" + elevatorNumber, elevatorNumber);
-	CSemaphore ElevatorIOProducer("ElevatorIOProducer" + elevatorNumber, 0, 1);
-	CSemaphore ElevatorIOConsumer1("ElevatorIOConsumer" + elevatorNumber, 0, 1);
-	CSemaphore ElevatorDispatcherProducer("ElevatorDispatcherProducer" + elevatorNumber, 0, 1);
-	CSemaphore ElevatorDispatcherConsumer("ElevatorDispatcherConsumer" + elevatorNumber, 0, 1);
 
+	// monitor class
+	Named ElevatorMonitor("elevator" + elevatorNumber, elevatorNumber);
+
+	CSemaphore ElevatorIOProducer("ElevatorIOProducer" + elevatorNumber, 0, 1);
+	CSemaphore ElevatorIOConsumer("ElevatorIOConsumer" + elevatorNumber, 1, 1);
+	CSemaphore ElevatorDispatcherProducer("ElevatorDispatcherProducer" + elevatorNumber, 0, 1);
+	CSemaphore ElevatorDispatcherConsumer("ElevatorDispatcherConsumer" + elevatorNumber, 1, 1);
 
 	CMailbox elevatorMailbox;
 	UINT message;
@@ -71,7 +76,9 @@ UINT __stdcall elevatorThread(void* args) {
 	elevatorStatus currentStatus = { 0, 0, 0, 0 };
 
 	for (;;) {
-		
+		ElevatorIOConsumer.Wait();
+		ElevatorDispatcherConsumer.Wait();
+
 		// If a new command has been receieved and the elevator is available
 		if (elevatorMailbox.TestForMessage()) {
 			message = elevatorMailbox.GetMessage();
@@ -86,6 +93,9 @@ UINT __stdcall elevatorThread(void* args) {
 
 		// Move to floor needed
 		while (destinationFloor != currentStatus.currentFloor) {
+			ElevatorIOConsumer.Wait();
+			ElevatorDispatcherConsumer.Wait();
+
 			if (currentStatus.outOfOrder) {
 				break;
 			}
@@ -101,14 +111,53 @@ UINT __stdcall elevatorThread(void* args) {
 				currentStatus.headingDirection = 0;
 				currentStatus.currentFloor--;
 			}
-			monitor.update_elevator_status(currentStatus);
+			ElevatorMonitor.update_elevator_status(currentStatus);
 
+			ElevatorIOConsumer.Signal();
+			ElevatorDispatcherConsumer.Signal();
 		}
 
-	
+		ElevatorIOConsumer.Signal();
+		ElevatorDispatcherConsumer.Signal();
+	}
+}
 
+UINT __stdcall elevatorStatusDispatcherThread1(void* args) {
+	Named ElevatorMonitor1(monitorElevator1, 1);
+
+	for (;;) {
+		ElevatorIOConsumer1.Wait();
+		ElevatorDispatcherConsumer1.Wait();
+
+		// produce data for IO C1 (done in elevator in dispatcher)
+
+		ElevatorIOProducer1.Signal();
+
+		// produce data for Dispatcher C1 (done in elevator in dispatcher)
+
+		ElevatorIOProducer2.Signal();
 	}
 
+	return 0;
+}
+
+UINT __stdcall elevatorStatusDispatcherThread2(void* args) {
+	Named ElevatorMonitor2(monitorElevator2, 2);
+
+	for (;;) {
+		ElevatorIOConsumer2.Wait();
+		ElevatorDispatcherConsumer2.Wait();
+
+		// produce data for IO C2 (done in elevator in dispatcher)
+
+		ElevatorIOProducer1.Signal();
+
+		// produce data for Dispatcher C2 (done in elevator in dispatcher)
+
+		ElevatorIOProducer2.Signal();
+	}
+
+	return 0;
 }
 
 UINT __stdcall commandThread(void* args) {

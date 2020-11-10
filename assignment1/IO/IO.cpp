@@ -49,31 +49,37 @@ UINT __stdcall keyboardThread(void* args) {
 	return 0;
 }
 
-UINT __stdcall elevatorThread1(void* args) {
-	// Code to Get_Elevator_Status from 1 and display on monitor here
-	
+UINT __stdcall elevatorStatusIOThread1(void* args) {
 	Named ElevatorMonitor1(monitorElevator1, 1);
 
 	for(;;) {
 		ElevatorIOConsumer1.Wait();
 		ElevatorDispatcherConsumer1.Wait();
 
+		// produce data for IO C1 (done in elevator in dispatcher)
 
 		ElevatorIOProducer1.Signal();
+
+		// produce data for Dispatcher C1 (done in elevator in dispatcher)
+
+		ElevatorIOProducer2.Signal();
 	}
 
 	return 0;
 }
 
-UINT __stdcall elevatorThread2(void* args) {
-	// Code to Get_Elevator_Status from 2 and display on monitor here
-
+UINT __stdcall elevatorStatusIOThread2(void* args) {
 	Named ElevatorMonitor2(monitorElevator2, 2);
 
 	for(;;) {
 		ElevatorIOConsumer2.Wait();
 		ElevatorDispatcherConsumer2.Wait();
 
+		// produce data for IO C2 (done in elevator in dispatcher)
+
+		ElevatorIOProducer1.Signal();
+
+		// produce data for Dispatcher C2 (done in elevator in dispatcher)
 
 		ElevatorIOProducer2.Signal();
 	}
@@ -83,8 +89,8 @@ UINT __stdcall elevatorThread2(void* args) {
 
 int main() {
 	CThread keyboardThread(keyboardThread, ACTIVE, NULL);
-	CThread elevatorThread1(elevatorThread1, ACTIVE, NULL);
-	CThread elevatorThread2(elevatorThread2, ACTIVE, NULL);
+	CThread elevatorStatusIOThread1(elevatorStatusIOThread1, ACTIVE, NULL);
+	CThread elevatorStatusIOThread2(elevatorStatusIOThread2, ACTIVE, NULL);
 
 	keyboardThread.WaitForThread();
 

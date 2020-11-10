@@ -25,15 +25,15 @@ CSemaphore MonitorOutput("MonitorOutput", 1);
 
 // Elevator Status
 // IO
-CSemaphore ElevatorIOProducer1("ElevatorIOProducer1", 0, 1);
+CSemaphore ElevatorIOProducer1("ElevatorIOProducer1", 0, 1);		//TODO: fix initial 0,1 values
 CSemaphore ElevatorIOProducer2("ElevatorIOProducer2", 0, 1);
-CSemaphore ElevatorIOConsumer1("ElevatorIOConsumer1", 0, 1);
-CSemaphore ElevatorIOConsumer2("ElevatorIOConsumer2", 0, 1);
+CSemaphore ElevatorIOConsumer1("ElevatorIOConsumer1", 1, 1);
+CSemaphore ElevatorIOConsumer2("ElevatorIOConsumer2", 1, 1);
 // Dispatcher
 CSemaphore ElevatorDispatcherProducer1("ElevatorDispatcherProducer1", 0, 1);
 CSemaphore ElevatorDispatcherProducer2("ElevatorDispatcherProducer2", 0, 1);
-CSemaphore ElevatorDispatcherConsumer1("ElevatorDispatcherConsumer1", 0, 1);
-CSemaphore ElevatorDispatcherConsumer2("ElevatorDispatcherConsumer2", 0, 1);
+CSemaphore ElevatorDispatcherConsumer1("ElevatorDispatcherConsumer1", 1, 1);
+CSemaphore ElevatorDispatcherConsumer2("ElevatorDispatcherConsumer2", 1, 1);
 
 
 CDataPool dpIoDispatcher("dpIoDispatcher", sizeof(struct IOData));
