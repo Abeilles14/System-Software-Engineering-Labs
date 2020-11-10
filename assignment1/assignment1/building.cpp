@@ -1,6 +1,5 @@
 #include "../../rt.h"
 #include "Elevator.h"
-#include "constants.h"
 
 using namespace std;
 
