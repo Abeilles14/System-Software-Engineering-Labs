@@ -29,7 +29,8 @@ UINT __stdcall keyboardThread(void* args) {
 		cout << input1;
 
 		if (input1 != '1' && input1 != '2' && input1 != 'u' && input1 != 'd' && input1 != 'e') {
-			cout << "Invalid 1st input";
+			cout << "\n                           ";
+			cout << "\n\nInvalid 1st input";
 			continue;
 		}
 
@@ -38,7 +39,7 @@ UINT __stdcall keyboardThread(void* args) {
 		cout << input2 << "\n";
 
 		if (!isdigit(input2) && input2 != 'e') {
-			cout << "Invalid 2nd input";
+			cout << "\nInvalid 2nd input";
 			continue;
 		}
 
