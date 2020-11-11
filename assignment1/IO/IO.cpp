@@ -3,13 +3,17 @@
 #include "../../rt.h"
 #include <chrono>
 #include <ctime>
+#include <conio.h>
+#include <stdio.h>
 #include "../constants.h"
 
 UINT __stdcall keyboardThread(void* args) {
 	struct IOData* dataPointer;
 	dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
 
-	std::string input;
+	//std::string input;
+	char input1 = NULL;
+	char input2 = NULL;
 	bool exit_flag = false;
 
 	while (!exit_flag) {
@@ -20,25 +24,25 @@ UINT __stdcall keyboardThread(void* args) {
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
 
-		// Waiting for input...
-		std::getline(std::cin, input);
+		// Waiting for input 1
+		input1 = _getch();
+		cout << input1;
 
-		if (input.length() != 2) {
-			cout << "Invalid length";
-			continue;
-		}
-
-		if (input[0] != '1' && input[0] != '2' && input[0] != 'u' && input[0] != 'd' && input[0] != 'e') {
+		if (input1 != '1' && input1 != '2' && input1 != 'u' && input1 != 'd' && input1 != 'e') {
 			cout << "Invalid 1st input";
 			continue;
 		}
 
-		if (!isdigit(input[1]) || (input[0] == 'e' && input[1] != 'e')) {
+		// Waiting for input 2
+		input2 = _getch();
+		cout << input2 << "\n";
+
+		if (!isdigit(input2)) {
 			cout << "Invalid 2nd input";
 			continue;
 		}
 
-		if (input[1] == 'e') {		// exit sequence, return elevators to ground, open doors, end sim.
+		if (input2 == 'e') {		// exit sequence, return elevators to ground, open doors, end sim
 			exit_flag = true;
 		}
 
@@ -46,8 +50,8 @@ UINT __stdcall keyboardThread(void* args) {
 		IOConsumer.Wait();
 
 		cout << "Writing data to pipeline...";
-		dataPointer->input1 = input[0];
-		dataPointer->input2 = input[1];
+		dataPointer->input1 = input1;
+		dataPointer->input2 = input2;
 
 		// Signal new data is available
 		IOProducer.Signal();

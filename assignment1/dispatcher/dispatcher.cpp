@@ -193,7 +193,6 @@ UINT __stdcall elevatorThread(void* args) {
 			ElevatorIOProducer.Signal();
 		}
 
-
 		// Close doors and move to floor needed
 		while (currentStatus.currentFloor != destinationFloor) {
 			currentStatus.doorStatus = 0;
