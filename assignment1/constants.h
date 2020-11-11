@@ -5,9 +5,9 @@
 // Structures
 struct elevatorStatus {
 	UINT currentFloor;
-	bool headingDirection;		// true = up, false = down
-	bool outOfOrder;
-	bool doorStatus;			
+	bool headingDirection;		// 1 = up, 0 = down
+	bool outOfOrder;			// 1 = out of order, 0 = in order
+	bool doorStatus;			// 0 = closed, 1 = open
 };
 
 struct IOData {
