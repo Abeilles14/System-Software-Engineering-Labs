@@ -20,6 +20,8 @@ bool waitingDirection;
 
 UINT currentCommand;
 
+bool exit_flag = false;
+
 // Threads
 UINT __stdcall commandThread(void* args);
 UINT __stdcall elevatorThread(void* args);
@@ -179,15 +181,17 @@ UINT __stdcall elevatorThread(void* args) {
 
 	for (;;) {
 		// If a new command has been receieved and the elevator is available
-		if (elevatorMailbox.TestForMessage()) {
+		if (elevatorMailbox.TestForMessage() && !exit_flag) {
 			message = elevatorMailbox.GetMessage();
 
 			destinationFloor = message;
 		}
 
-		else {
-			if (currentStatus.currentFloor != 0) {
-				destinationFloor = 0;
+		if (exit_flag) {
+			destinationFloor = 0;
+
+			if (currentStatus.currentFloor == 0) {
+				return 0;
 			}
 		}
 
@@ -319,7 +323,6 @@ UINT __stdcall commandThread(void* args) {
 	dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
 
 	std::string input;
-	bool exit_flag = false;
 
 	while (!exit_flag) {
 		struct IOData* dataPointer;
