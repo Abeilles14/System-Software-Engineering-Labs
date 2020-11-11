@@ -90,6 +90,14 @@ void drawElevator(int cursorX, int cursorY) {
                | |_____| |)";
 }
 
+void eraseElevator(int cursorX, int cursorY) {
+	cout << R"(
+                          
+                          
+                          
+                          )";
+}
+
 /*
 |  _____  |
 |o|  0  |o|

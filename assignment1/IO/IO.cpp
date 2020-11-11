@@ -12,7 +12,7 @@ UINT __stdcall keyboardThread(void* args) {
 	std::string input;
 	bool exit_flag = false;
 
-	for (;;) {
+	while (!exit_flag) {
 
 		terminalOutput.Wait();
 		MOVE_CURSOR(0, 0);
@@ -39,7 +39,6 @@ UINT __stdcall keyboardThread(void* args) {
 		}
 
 		if (input[1] == 'e') {		// exit sequence, return elevators to ground, open doors, end sim.
-			cout << "Ending simulation, returning elevators to ground floor";
 			exit_flag = true;
 		}
 
@@ -52,10 +51,6 @@ UINT __stdcall keyboardThread(void* args) {
 
 		// Signal new data is available
 		IOProducer.Signal();
-
-		if (exit_flag == true) {
-			break;
-		}
 	}
 
 	return 0;

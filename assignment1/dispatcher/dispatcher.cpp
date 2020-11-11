@@ -185,9 +185,11 @@ UINT __stdcall commandThread(void* args) {
 	//Named terminalControl = *(Named*)(args);
 	struct IOData* dataPointer;
 	dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
-	std::string input;
 
-	for (;;) {
+	std::string input;
+	bool exit_flag = false;
+
+	while (!exit_flag) {
 		struct IOData* dataPointer;
 		dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
 
@@ -223,12 +225,22 @@ UINT __stdcall commandThread(void* args) {
 			currentCommand = requestDown;
 			break;
 
+		case 'e':
+			waitingFloor = (UINT)(dataPointer->input2 - '0');	//TODO: check input 2 for e
+			waitingDirection = 0;
+			currentCommand = requestDown;
+
+			cout << "Ending simulation, returning elevators to ground floor";
+			exit_flag = true;
+			break;
+
 		default:
 			cout << "CRITICAL ERROR";
 			break;
 
 		}
 
+		// Wait for function to be consumed after valid input as been issued
 		IOConsumer.Signal();
 	}
 
