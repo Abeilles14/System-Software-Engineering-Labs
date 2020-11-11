@@ -23,6 +23,8 @@ struct IOData {
 	char input2;
 };
 
+static const UINT elevatorTime = 500;
+
 // Semaphores
 // IO - Dispatcher
 CSemaphore IOProducer("IOProducer", 0);

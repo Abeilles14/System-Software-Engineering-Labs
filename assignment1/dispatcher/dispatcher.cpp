@@ -185,6 +185,12 @@ UINT __stdcall elevatorThread(void* args) {
 			destinationFloor = message;
 		}
 
+		else {
+			if (currentStatus.currentFloor != 0) {
+				destinationFloor = 0;
+			}
+		}
+
 		// If elevator is out of order
 		if (currentStatus.outOfOrder) {
 			ElevatorIOConsumer.Wait();
@@ -229,7 +235,7 @@ UINT __stdcall elevatorThread(void* args) {
 			}
 
 			// Time between elevator movements
-			Sleep(500);
+			Sleep(elevatorTime);
 			if (currentStatus.currentFloor < destinationFloor) {
 				currentStatus.headingDirection = 1;
 				currentStatus.currentFloor++;
@@ -267,7 +273,7 @@ UINT __stdcall elevatorThread(void* args) {
 				ElevatorIOProducer.Signal();
 
 				// Leave doors open 
-				Sleep(1000);
+				Sleep(elevatorTime);
 			}
 		}
 	}
