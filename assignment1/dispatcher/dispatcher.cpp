@@ -9,11 +9,11 @@
 elevatorStatus elevator1;
 elevatorStatus elevator2;
 
-UINT elevator1Dest;
-UINT elevator2Dest;
+UINT elevator1Dest = 0;
+UINT elevator2Dest = 0;
 
 // Which floor was the elevator called from
-UINT waitingFloor;
+UINT waitingFloor = 0;
 
 // 0 = down, 1 = up
 bool waitingDirection;
@@ -50,6 +50,8 @@ int main() {
 	// named monitors
 	Named ElevatorMonitor1(monitorElevator1, 1);
 	Named ElevatorMonitor2(monitorElevator2, 2);
+	int fsadfasd;
+	int fsad2fasd;
 
 	for (;;) {
 		switch (currentCommand) {
@@ -66,54 +68,68 @@ int main() {
 		case requestUp:
 			// INSERT LOGIC FOR AN UP REQUEST. Probably compares current/destination floor of elevator with source of request
 			// Check if either elevator is free
-			if (elevator1.available == true && abs((int)(elevator1Dest - waitingFloor)) < abs((int)(elevator2Dest - waitingFloor))) {
+			fsadfasd = abs((int)(elevator1Dest - waitingFloor));
+			fsad2fasd = abs((int)(elevator2Dest - waitingFloor));
+			if (elevator1.available == true && abs((int)(elevator1Dest - waitingFloor)) <= abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread1.Post(waitingFloor);
+				elevator1Dest = waitingFloor;
 			}
 
-			else if (elevator2.available == true && abs((int)(elevator1Dest - waitingFloor)) > abs((int)(elevator2Dest - waitingFloor))) {
+			else if (elevator2.available == true && abs((int)(elevator1Dest - waitingFloor)) >= abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread2.Post(waitingFloor);
+				elevator2Dest = waitingFloor;
 			}
 			
 			else if (elevator1.headingDirection == 1) {
 				elevatorThread1.Post(waitingFloor);
+				elevator1Dest = waitingFloor;
 			}
 			else if (elevator2.headingDirection == 1) {
 				elevatorThread2.Post(waitingFloor);
+				elevator2Dest = waitingFloor;
 			}
 
 			// If neither elevator is near/on its way, check which one is nearest and send it based on last destination
 			else if (abs((int)(elevator1Dest - waitingFloor)) < abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread1.Post(waitingFloor);
+				elevator1Dest = waitingFloor;
 			}
 			else {
 				elevatorThread2.Post(waitingFloor);
+				elevator2Dest = waitingFloor;
 			}
 			currentCommand = noCommand;
 			break;
 
 		case requestDown:
 			// Check if either elevator is free
-			if (elevator1.available == true && abs((int)(elevator1Dest - waitingFloor)) < abs((int)(elevator2Dest - waitingFloor))) {
+			if (elevator1.available == true && abs((int)(elevator1Dest - waitingFloor)) <= abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread1.Post(waitingFloor);
+				elevator1Dest = waitingFloor;
 			}
 
-			else if (elevator2.available == true && abs((int)(elevator1Dest - waitingFloor)) > abs((int)(elevator2Dest - waitingFloor))) {
+			else if (elevator2.available == true && abs((int)(elevator1Dest - waitingFloor)) >= abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread2.Post(waitingFloor);
+				elevator2Dest = waitingFloor;
 			}
 
 			else if (elevator1.headingDirection == 0) {
 				elevatorThread1.Post(waitingFloor);
+				elevator1Dest = waitingFloor;
 			}
 			else if (elevator2.headingDirection == 0) {
 				elevatorThread2.Post(waitingFloor);
+				elevator2Dest = waitingFloor;
 			}
 
 			// If neither elevator is near/on its way, check which one is nearest and send it based on last destination
 			else if (abs((int)(elevator1Dest - waitingFloor)) < abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread1.Post(waitingFloor);
+				elevator1Dest = waitingFloor;
 			}
 			else {
 				elevatorThread2.Post(waitingFloor);
+				elevator2Dest = waitingFloor;
 			}
 			currentCommand = noCommand;
 			break;
@@ -152,6 +168,15 @@ UINT __stdcall elevatorThread(void* args) {
 	UINT destinationFloor = 0;
 	elevatorStatus currentStatus = { 0, 1, 0, 0, 1};	// default: floor 0, going up, in order, doors closed, available
 
+	// Update initial status
+	ElevatorIOConsumer.Wait();
+	ElevatorDispatcherConsumer.Wait();
+
+	ElevatorMonitor.update_elevator_status(currentStatus);
+
+	ElevatorDispatcherProducer.Signal();
+	ElevatorIOProducer.Signal();
+
 	for (;;) {
 		// If a new command has been receieved and the elevator is available
 		if (elevatorMailbox.TestForMessage()) {
@@ -170,6 +195,7 @@ UINT __stdcall elevatorThread(void* args) {
 
 			currentStatus.outOfOrder = 1;
 			currentStatus.doorStatus = 0;
+			currentStatus.available = 0;
 
 
 			ElevatorDispatcherProducer.Signal();
@@ -196,6 +222,7 @@ UINT __stdcall elevatorThread(void* args) {
 		// Close doors and move to floor needed
 		while (currentStatus.currentFloor != destinationFloor) {
 			currentStatus.doorStatus = 0;
+			currentStatus.available = 0;
 
 			if (currentStatus.outOfOrder) {
 				break;
