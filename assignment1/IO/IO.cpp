@@ -20,7 +20,7 @@ UINT __stdcall keyboardThread(void* args) {
 
 		terminalOutput.Wait();
 		MOVE_CURSOR(0, 0);
-		cout << "Input new data into pipeline\n";		
+		cout << "Input new data into pipeline";	
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
 
@@ -29,8 +29,7 @@ UINT __stdcall keyboardThread(void* args) {
 		cout << input1;
 
 		if (input1 != '1' && input1 != '2' && input1 != 'u' && input1 != 'd' && input1 != 'e') {
-			cout << "\n                           ";
-			cout << "\n\nInvalid 1st input";
+			cout << "\n\rInvalid 1st input            ";
 			continue;
 		}
 
@@ -39,7 +38,7 @@ UINT __stdcall keyboardThread(void* args) {
 		cout << input2 << "\n";
 
 		if (!isdigit(input2) && input2 != 'e') {
-			cout << "\nInvalid 2nd input";
+			cout << "\rInvalid 2nd input             ";
 			continue;
 		}
 
@@ -49,8 +48,7 @@ UINT __stdcall keyboardThread(void* args) {
 
 		// Wait for function to be consumed after valid input as been issued
 		IOConsumer.Wait();
-
-		cout << "Writing data to pipeline...";
+		cout << "\rWriting data to pipeline...";
 		dataPointer->input1 = input1;
 		dataPointer->input2 = input2;
 
