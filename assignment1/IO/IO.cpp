@@ -37,12 +37,12 @@ UINT __stdcall keyboardThread(void* args) {
 		input2 = _getch();
 		cout << input2 << "\n";
 
-		if (!isdigit(input2)) {
+		if (!isdigit(input2) && input2 != 'e') {
 			cout << "Invalid 2nd input";
 			continue;
 		}
 
-		if (input2 == 'e') {		// exit sequence, return elevators to ground, open doors, end sim
+		if (input1 == 'e' && input2 == 'e') {		// exit sequence, return elevators to ground, open doors, end sim
 			exit_flag = true;
 		}
 

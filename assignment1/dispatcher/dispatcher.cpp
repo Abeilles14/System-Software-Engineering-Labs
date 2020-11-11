@@ -352,7 +352,7 @@ UINT __stdcall commandThread(void* args) {
 			waitingDirection = 0;
 			currentCommand = requestDown;
 
-			cout << "Ending simulation, returning elevators to ground floor";
+			cout << "Ending simulation, returning elevators to ground floor\n";
 			exit_flag = true;
 			break;
 
