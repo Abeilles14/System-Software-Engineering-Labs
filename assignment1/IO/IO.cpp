@@ -8,7 +8,9 @@
 UINT __stdcall keyboardThread(void* args) {
 	struct IOData* dataPointer;
 	dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
+
 	std::string input;
+	bool exit_flag = false;
 
 	for (;;) {
 
@@ -26,14 +28,19 @@ UINT __stdcall keyboardThread(void* args) {
 			continue;
 		}
 
-		if (input[0] != '1' && input[0] != '2' && input[0] != 'u' && input[0] != 'd') {
-			cout << "Invalid input 1st";
+		if (input[0] != '1' && input[0] != '2' && input[0] != 'u' && input[0] != 'd' && input[0] != 'e') {
+			cout << "Invalid 1st input";
 			continue;
 		}
 
-		if (!isdigit(input[1])) {
-			cout << "Invalid input 2nd";
+		if (!isdigit(input[1]) || (input[0] == 'e' && input[1] != 'e')) {
+			cout << "Invalid 2nd input";
 			continue;
+		}
+
+		if (input[1] == 'e') {		// exit sequence, return elevators to ground, open doors, end sim.
+			cout << "Ending simulation, returning elevators to ground floor";
+			exit_flag = true;
 		}
 
 		// Wait for function to be consumed after valid input as been issued
@@ -45,6 +52,10 @@ UINT __stdcall keyboardThread(void* args) {
 
 		// Signal new data is available
 		IOProducer.Signal();
+
+		if (exit_flag == true) {
+			break;
+		}
 	}
 
 	return 0;

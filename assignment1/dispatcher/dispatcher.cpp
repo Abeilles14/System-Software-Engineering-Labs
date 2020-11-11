@@ -127,13 +127,15 @@ UINT __stdcall elevatorThread(void* args) {
 			if (currentStatus.currentFloor < destinationFloor) {
 				currentStatus.headingDirection = 1;
 				currentStatus.currentFloor++;
-				cout << "elevator " << elevatorNumber << " rising\n";
+				cout << "elevator " << elevatorNumber << " going up\n";
+				//TODO: print elevator floor
 			}
 
 			else {
 				currentStatus.headingDirection = 0;
 				currentStatus.currentFloor--;
-				cout << "elevator " << elevatorNumber << " falling\n";
+				cout << "elevator " << elevatorNumber << " going down\n";
+				//TODO: print elevator floor
 			}
 
 			ElevatorIOConsumer.Wait();

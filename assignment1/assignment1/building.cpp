@@ -10,7 +10,7 @@ int main()
 
 void drawBuilding() {
 
-cout << R"(                            _II__|
+	cout << R"(                        _II__|
 									  [[__] |
 				______________________||  |___
 			   /^^^^^^,^.^^^^^^^^^^^^^\|__|^^^\
@@ -72,7 +72,7 @@ cout << R"(                            _II__|
 			|= ==|           |== |           |= ==|
 			|== =|           | = |           |== =|
 			|= ==|___________|== |___________|= ==|
-			|====|MMMMMMMMMMM|===|MMMMMMMMMMM|====|)"
+			|====|MMMMMMMMMMM|===|MMMMMMMMMMM|====|)";
 }
 
 void drawPassengers(int cursorX, int cursorY, int number) {
