@@ -65,7 +65,16 @@ int main() {
 
 		case requestUp:
 			// INSERT LOGIC FOR AN UP REQUEST. Probably compares current/destination floor of elevator with source of request
-			if (elevator1.headingDirection == 1) {
+			// Check if either elevator is free
+			if (elevator1.available == true && abs((int)(elevator1Dest - waitingFloor)) < abs((int)(elevator2Dest - waitingFloor))) {
+				elevatorThread1.Post(waitingFloor);
+			}
+
+			else if (elevator2.available == true && abs((int)(elevator1Dest - waitingFloor)) > abs((int)(elevator2Dest - waitingFloor))) {
+				elevatorThread2.Post(waitingFloor);
+			}
+			
+			else if (elevator1.headingDirection == 1) {
 				elevatorThread1.Post(waitingFloor);
 			}
 			else if (elevator2.headingDirection == 1) {
@@ -83,7 +92,16 @@ int main() {
 			break;
 
 		case requestDown:
-			if (elevator1.headingDirection == 0) {
+			// Check if either elevator is free
+			if (elevator1.available == true && abs((int)(elevator1Dest - waitingFloor)) < abs((int)(elevator2Dest - waitingFloor))) {
+				elevatorThread1.Post(waitingFloor);
+			}
+
+			else if (elevator2.available == true && abs((int)(elevator1Dest - waitingFloor)) > abs((int)(elevator2Dest - waitingFloor))) {
+				elevatorThread2.Post(waitingFloor);
+			}
+
+			else if (elevator1.headingDirection == 0) {
 				elevatorThread1.Post(waitingFloor);
 			}
 			else if (elevator2.headingDirection == 0) {
@@ -132,7 +150,7 @@ UINT __stdcall elevatorThread(void* args) {
 	UINT message;
 
 	UINT destinationFloor = 0;
-	elevatorStatus currentStatus = { 0, 1, 0, 0 };	// default: floor 0, going up, in order, doors closed
+	elevatorStatus currentStatus = { 0, 1, 0, 0, 1};	// default: floor 0, going up, in order, doors closed, available
 
 	for (;;) {
 		// If a new command has been receieved and the elevator is available
@@ -142,8 +160,6 @@ UINT __stdcall elevatorThread(void* args) {
 			destinationFloor = message;
 		}
 
-		}
-
 		// If elevator is out of order
 		if (currentStatus.outOfOrder) {
 			ElevatorIOConsumer.Wait();
@@ -151,10 +167,10 @@ UINT __stdcall elevatorThread(void* args) {
 
 			cout << "elevator " << elevatorNumber << " out of order\n";
 			cout << "elevator " << elevatorNumber << " doors closed\n";
+
 			currentStatus.outOfOrder = 1;
 			currentStatus.doorStatus = 0;
 
-			ElevatorMonitor.update_elevator_status(currentStatus);
 
 			ElevatorDispatcherProducer.Signal();
 			ElevatorIOProducer.Signal();
@@ -163,7 +179,8 @@ UINT __stdcall elevatorThread(void* args) {
 		}
 
 		// Close doors
-					// Receieved new order, close doors
+		// Receieved new order, close doors
+		if (currentStatus.currentFloor != destinationFloor) {
 			ElevatorIOConsumer.Wait();
 			ElevatorDispatcherConsumer.Wait();
 
@@ -174,6 +191,8 @@ UINT __stdcall elevatorThread(void* args) {
 
 			ElevatorDispatcherProducer.Signal();
 			ElevatorIOProducer.Signal();
+		}
+
 
 		// Close doors and move to floor needed
 		while (currentStatus.currentFloor != destinationFloor) {
@@ -198,7 +217,6 @@ UINT __stdcall elevatorThread(void* args) {
 				cout << "elevator " << elevatorNumber << " going down\n";
 				cout << "elevator " << elevatorNumber << " at floor " << currentStatus.currentFloor << "\n";
 			}
-			currentStatus.doorStatus = 1;
 
 			ElevatorIOConsumer.Wait();
 			ElevatorDispatcherConsumer.Wait();
@@ -207,6 +225,24 @@ UINT __stdcall elevatorThread(void* args) {
 
 			ElevatorDispatcherProducer.Signal();
 			ElevatorIOProducer.Signal();
+
+			if (currentStatus.currentFloor == destinationFloor) {
+
+				ElevatorIOConsumer.Wait();
+				ElevatorDispatcherConsumer.Wait();
+
+				currentStatus.doorStatus = 1;
+				currentStatus.available = 1;
+				cout << "elevator " << elevatorNumber << " doors open\n";
+
+				ElevatorMonitor.update_elevator_status(currentStatus);
+
+				ElevatorDispatcherProducer.Signal();
+				ElevatorIOProducer.Signal();
+
+				// Leave doors open 
+				Sleep(1000);
+			}
 		}
 	}
 }

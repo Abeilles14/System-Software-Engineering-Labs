@@ -1,6 +1,13 @@
 #pragma once
 #include "../../rt.h"
 
+enum elevatorCommand {
+	noCommand,
+	firstElevator,
+	secondElevator,
+	requestUp,
+	requestDown
+};
 
 // Structures
 struct elevatorStatus {
@@ -8,6 +15,7 @@ struct elevatorStatus {
 	bool headingDirection;		// 1 = up, 0 = down
 	bool outOfOrder;			// 1 = out of order, 0 = in order
 	bool doorStatus;			// 0 = closed, 1 = open
+	bool available;				// 0 = busy, 1 = free
 };
 
 struct IOData {
@@ -82,13 +90,4 @@ public:
 
 		this->sharedMutex->Signal();
 	}
-};
-
-// Enumerated
-enum elevatorCommand {
-	noCommand,
-	firstElevator,
-	secondElevator,
-	requestUp,
-	requestDown
 };
