@@ -17,6 +17,8 @@ UINT waitingFloor = 0;
 
 // 0 = down, 1 = up
 bool waitingDirection;
+bool elevator1OutOfOrder = 0;
+bool elevator2OutOfOrder = 0;
 
 UINT currentCommand;
 
@@ -49,13 +51,7 @@ int main() {
 
 	// INSERT LOGIC TO DETERMINE WHICH ELEVATOR TO SEND A COMMAND TO
 
-	// named monitors
-	Named ElevatorMonitor1(monitorElevator1, 1);
-	Named ElevatorMonitor2(monitorElevator2, 2);
-	int fsadfasd;
-	int fsad2fasd;
-
-	for (;;) {
+	while (!exit_flag) {
 		switch (currentCommand) {
 		case firstElevator:
 			elevatorThread1.Post(elevator1Dest);
@@ -70,8 +66,6 @@ int main() {
 		case requestUp:
 			// INSERT LOGIC FOR AN UP REQUEST. Probably compares current/destination floor of elevator with source of request
 			// Check if either elevator is free
-			fsadfasd = abs((int)(elevator1Dest - waitingFloor));
-			fsad2fasd = abs((int)(elevator2Dest - waitingFloor));
 			if (elevator1.available == true && abs((int)(elevator1Dest - waitingFloor)) <= abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread1.Post(waitingFloor);
 				elevator1Dest = waitingFloor;
@@ -144,10 +138,13 @@ int main() {
 	}
 
 	IOProcess.WaitForProcess();
-
+	cout << "IO CLOSED";
 	commandThread.WaitForThread();
+	cout << "COMAND THREAD CLOSED\n";
 	elevatorThread1.WaitForThread();
+	cout << "ELEVATOR 1 CLOSED\n";
 	elevatorThread2.WaitForThread();
+	cout << "ELEVATOR 2 CLOSED\n";
 
 	return 0;
 }
@@ -157,7 +154,7 @@ UINT __stdcall elevatorThread(void* args) {
 	UINT elevatorNumber = *(UINT*)(args);
 
 	// monitor class
-	Named ElevatorMonitor("elevator" + elevatorNumber, elevatorNumber);
+	Named * ElevatorMonitor = new Named("elevator" + elevatorNumber, elevatorNumber);
 
 	CSemaphore ElevatorIOProducer("ElevatorIOProducer" + std::to_string(elevatorNumber), 0, 1);
 	CSemaphore ElevatorIOConsumer("ElevatorIOConsumer" + std::to_string(elevatorNumber), 1, 1);
@@ -174,7 +171,7 @@ UINT __stdcall elevatorThread(void* args) {
 	ElevatorIOConsumer.Wait();
 	ElevatorDispatcherConsumer.Wait();
 
-	ElevatorMonitor.update_elevator_status(currentStatus);
+	ElevatorMonitor->update_elevator_status(currentStatus);
 
 	ElevatorDispatcherProducer.Signal();
 	ElevatorIOProducer.Signal();
@@ -191,6 +188,13 @@ UINT __stdcall elevatorThread(void* args) {
 			destinationFloor = 0;
 
 			if (currentStatus.currentFloor == 0) {
+				ElevatorIOConsumer.Wait();
+				ElevatorDispatcherConsumer.Wait();
+
+				ElevatorMonitor->update_elevator_status(currentStatus);
+
+				ElevatorDispatcherProducer.Signal();
+				ElevatorIOProducer.Signal();
 				return 0;
 			}
 		}
@@ -223,7 +227,7 @@ UINT __stdcall elevatorThread(void* args) {
 			currentStatus.doorStatus = 0;
 			cout << "elevator " << elevatorNumber << " doors closed\n";
 			
-			ElevatorMonitor.update_elevator_status(currentStatus);
+			ElevatorMonitor->update_elevator_status(currentStatus);
 
 			ElevatorDispatcherProducer.Signal();
 			ElevatorIOProducer.Signal();
@@ -257,7 +261,7 @@ UINT __stdcall elevatorThread(void* args) {
 			ElevatorIOConsumer.Wait();
 			ElevatorDispatcherConsumer.Wait();
 
-			ElevatorMonitor.update_elevator_status(currentStatus);
+			ElevatorMonitor->update_elevator_status(currentStatus);
 
 			ElevatorDispatcherProducer.Signal();
 			ElevatorIOProducer.Signal();
@@ -271,7 +275,7 @@ UINT __stdcall elevatorThread(void* args) {
 				currentStatus.available = 1;
 				cout << "elevator " << elevatorNumber << " doors open\n";
 
-				ElevatorMonitor.update_elevator_status(currentStatus);
+				ElevatorMonitor->update_elevator_status(currentStatus);
 
 				ElevatorDispatcherProducer.Signal();
 				ElevatorIOProducer.Signal();
@@ -281,6 +285,7 @@ UINT __stdcall elevatorThread(void* args) {
 			}
 		}
 	}
+	return 0;
 }
 
 UINT __stdcall elevatorStatusThread1(void* args) {
@@ -354,6 +359,27 @@ UINT __stdcall commandThread(void* args) {
 			waitingFloor = (UINT)(dataPointer->input2 - '0');
 			waitingDirection = 0;
 			currentCommand = requestDown;
+			break;
+
+		case '+':
+			
+			if (dataPointer->input2 == '1') {
+				elevator1OutOfOrder = false;
+			}
+
+			else {
+				elevator2OutOfOrder = false;
+			}
+			break;
+
+		case '-':
+			if (dataPointer->input2 == '1') {
+				elevator1OutOfOrder = true;
+			}
+
+			else {
+				elevator2OutOfOrder = true;
+			}
 			break;
 
 		case 'e':

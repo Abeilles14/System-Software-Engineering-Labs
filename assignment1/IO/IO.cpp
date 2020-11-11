@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include "../constants.h"
 
+bool exit_flag = false;
+
 UINT __stdcall keyboardThread(void* args) {
 	struct IOData* dataPointer;
 	dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
@@ -14,7 +16,6 @@ UINT __stdcall keyboardThread(void* args) {
 	//std::string input;
 	char input1 = NULL;
 	char input2 = NULL;
-	bool exit_flag = false;
 
 	while (!exit_flag) {
 
@@ -28,7 +29,7 @@ UINT __stdcall keyboardThread(void* args) {
 		input1 = _getch();
 		cout << input1;
 
-		if (input1 != '1' && input1 != '2' && input1 != 'u' && input1 != 'd' && input1 != 'e') {
+		if (input1 != '1' && input1 != '2' && input1 != 'u' && input1 != 'd' && input1 != 'e' && input1 != '+' && input1 != '-') {
 			cout << "\n\rInvalid 1st input            ";
 			continue;
 		}
@@ -60,7 +61,7 @@ UINT __stdcall keyboardThread(void* args) {
 }
 
 UINT __stdcall elevatorStatusIOThread1(void* args) {
-	Named ElevatorMonitor1(monitorElevator1, 1);
+	Named* ElevatorMonitor1 = new Named(monitorElevator1, 1);
 	elevatorStatus currentStatus;
 
 	terminalOutput.Wait();
@@ -72,10 +73,8 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 	for(;;) {
 
 		ElevatorIOProducer1.Wait();
-		ElevatorMonitor1.get_elevator_status(currentStatus);
+		ElevatorMonitor1->get_elevator_status(currentStatus);
 		ElevatorIOConsumer1.Signal();
-
-
 
 		// Display on terminal output
 		terminalOutput.Wait();
@@ -84,6 +83,9 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
 
+		if (currentStatus.currentFloor == 0 && exit_flag) {
+			break;
+		}
 		// produce data for IO C1 (done in elevator in dispatcher)
 	}
 
@@ -91,7 +93,7 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 }
 
 UINT __stdcall elevatorStatusIOThread2(void* args) {
-	Named ElevatorMonitor2(monitorElevator2, 2);
+	Named *ElevatorMonitor2 = new Named(monitorElevator2, 2);
 	elevatorStatus currentStatus;
 
 	terminalOutput.Wait();
@@ -102,7 +104,7 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 
 	for(;;) {
 		ElevatorIOProducer2.Wait();
-		ElevatorMonitor2.get_elevator_status(currentStatus);
+		ElevatorMonitor2->get_elevator_status(currentStatus);
 		ElevatorIOConsumer2.Signal();
 
 
@@ -113,6 +115,11 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 		cout << "Elevator 2 on floor " << currentStatus.currentFloor;
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
+
+		if (currentStatus.currentFloor == 0 && exit_flag) {
+			
+			break;
+		}
 	}
 
 	return 0;
@@ -120,10 +127,12 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 
 int main() {
 	CThread keyboardThread(keyboardThread, ACTIVE, NULL);
-	CThread elevatorStatusIOThread1(elevatorStatusIOThread1, ACTIVE, NULL);
-	CThread elevatorStatusIOThread2(elevatorStatusIOThread2, ACTIVE, NULL);
+	CThread elevatorStatusThread1(elevatorStatusIOThread1, ACTIVE, NULL);
+	CThread elevatorStatusThread2(elevatorStatusIOThread2, ACTIVE, NULL);
 
 	keyboardThread.WaitForThread();
+	elevatorStatusThread1.WaitForThread();
+	elevatorStatusThread2.WaitForThread();
 
 	return 0;
 }
