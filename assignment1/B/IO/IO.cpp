@@ -109,14 +109,14 @@ UINT __stdcall passengerThread(void* args) {
 	struct PassengerData* passengerDataPointer;
 	passengerDataPointer = (struct PassengerData*)dpPassengerIO.LinkDataPool();
 
-	while (!exit_flag) {
+	while (!exit_flag) {				// currently only lets 1 passenger call at a time...
 		//create passengers
 		passenger_count++;
 		Passenger passenger(passenger_count);
 		NamedPassenger* PassengerMonitor = new NamedPassenger("Passenger" + passenger.passengerNumber);
 		
 		terminalOutput.Wait();
-		MOVE_CURSOR(0, 8);
+		MOVE_CURSOR(0, 9);
 		printf("Passenger %d has arrived on floor %d\n", passenger.passengerNumber, passenger.currentFloor);
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
@@ -124,9 +124,9 @@ UINT __stdcall passengerThread(void* args) {
 		// Wait for function to be consumed after valid input as been issued
 		PassengerConsumer.Wait();
 		MOVE_CURSOR(0, 10);
-		printf("\rWriting floor and direction to pipeline...");
+		printf("\rWriting floor and direction to Passenger IO pipeline...");
 		MOVE_CURSOR(0, 1);
-		passengerDataPointer->upOrDown = passenger.upOrDown;
+		passengerDataPointer->upOrDown = passenger.upOrDown;				// TODO: Use monitor instead to update??
 		passengerDataPointer->currentFloor = passenger.currentFloor;		// send curr floor and direction in dp
 
 		// Signal new data is available
@@ -135,7 +135,7 @@ UINT __stdcall passengerThread(void* args) {
 		EnterElevator.Wait();		// timeout condition, wait for IO to send elevator down and open doors to passenger
 
 		MOVE_CURSOR(0, 10);
-		printf("\rWriting destination floor to pipeline...");
+		printf("\rWriting destination floor to Passenger IO pipeline...");
 		MOVE_CURSOR(0, 1);
 		passengerDataPointer->destinationFloor = passenger.destinationFloor;		// send dest floor in dp
 		//passenger.elevatorNumber = ???;			// find out passenger's elevator number
@@ -162,10 +162,11 @@ int main() {
 		ACTIVE
 	);
 
+	// IO dispatcher datapool
 	struct IOData* dataPointer;
 	dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
 
-	//create datapool
+	// Passener IO datapool
 	struct PassengerData* passengerDataPointer;
 	passengerDataPointer = (struct PassengerData*)dpPassengerIO.LinkDataPool();
 
