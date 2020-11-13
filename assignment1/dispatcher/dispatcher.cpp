@@ -213,6 +213,9 @@ UINT __stdcall elevatorThread(void* args) {
 
 				ElevatorDispatcherProducer.Signal();
 				ElevatorIOProducer.Signal();
+
+				Sleep(elevatorTime);
+
 			}
 			//continue;
 		}
@@ -237,7 +240,7 @@ UINT __stdcall elevatorThread(void* args) {
 			currentStatus.doorStatus = 0;
 			currentStatus.available = 0;
 
-			if (currentStatus.outOfOrder) {
+			if (elevatorOutOfOrder[elevatorNumber - 1]) {
 				break;
 			}
 
