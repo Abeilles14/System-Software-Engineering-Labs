@@ -40,12 +40,8 @@
 *.ipch
 *.ilk
 *.pdb
-*.sln
 *.log
 *.tlog
 *.lastbuildstate
 *.idb
-*.vcxproj
-*.filters
-*.user
 *.opendb
