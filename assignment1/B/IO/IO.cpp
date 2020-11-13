@@ -127,7 +127,7 @@ UINT __stdcall passengerThread(void* args) {
 		printf("\rWriting floor and direction to Passenger IO pipeline...");
 		MOVE_CURSOR(0, 1);
 		passengerDataPointer->upOrDown = passenger.upOrDown;				// TODO: Use monitor instead to update??
-		passengerDataPointer->currentFloor = passenger.currentFloor;		// send curr floor and direction in dp
+		passengerDataPointer->currentFloor = '0' + passenger.currentFloor;		// send curr floor and direction in dp as char
 
 		// Signal new data is available
 		PassengerProducer.Signal();
@@ -137,7 +137,7 @@ UINT __stdcall passengerThread(void* args) {
 		MOVE_CURSOR(0, 10);
 		printf("\rWriting destination floor to Passenger IO pipeline...");
 		MOVE_CURSOR(0, 1);
-		passengerDataPointer->destinationFloor = passenger.destinationFloor;		// send dest floor in dp
+		passengerDataPointer->destinationFloor = '0' + passenger.destinationFloor;		// send dest floor in dp
 		//passenger.elevatorNumber = ???;			// find out passenger's elevator number
 
 		ExitElevator.Wait();		// timeout condition: wait for IO to send elevator to floor and open doors
@@ -152,7 +152,7 @@ UINT __stdcall passengerThread(void* args) {
 
 int main() {
 	CThread passengerThread(passengerThread, ACTIVE, NULL);
-	CThread keyboardThread(keyboardThread, ACTIVE, NULL);
+	//CThread keyboardThread(keyboardThread, ACTIVE, NULL);
 	CThread elevatorStatusThread1(elevatorStatusIOThread1, ACTIVE, NULL);
 	CThread elevatorStatusThread2(elevatorStatusIOThread2, ACTIVE, NULL);
 
@@ -211,7 +211,7 @@ int main() {
 		IOConsumer.Wait();
 		cout << "\rWriting data to pipeline...";
 		dataPointer->input1 = passengerDataPointer->elevatorNumber;
-		dataPointer->input2 = passengerDataPointer->destinationFloor;
+		dataPointer->input2 = (char) passengerDataPointer->destinationFloor;
 
 		// Signal new data is available
 		IOProducer.Signal();
@@ -226,7 +226,7 @@ int main() {
 
 	passengerThread.WaitForThread();
 	DispatcherProcess.WaitForProcess();
-	keyboardThread.WaitForThread();
+	//keyboardThread.WaitForThread();
 	elevatorStatusThread1.WaitForThread();
 	elevatorStatusThread2.WaitForThread();
 

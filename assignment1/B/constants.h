@@ -32,9 +32,9 @@ struct IOData {
 };
 
 struct PassengerData {
-	UINT currentFloor;
+	char currentFloor;
 	char upOrDown;
-	UINT destinationFloor;
+	char destinationFloor;
 	UINT elevatorNumber;
 };
 
