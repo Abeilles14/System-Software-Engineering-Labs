@@ -41,12 +41,6 @@ int main() {
 	CThread elevatorDispatcherThread1(elevatorStatusThread1, ACTIVE, NULL);
 	CThread elevatorDispatcherThread2(elevatorStatusThread2, ACTIVE, NULL);
 
-	CProcess IOProcess("IO.exe",	// pathlist to child program executable
-		NORMAL_PRIORITY_CLASS,
-		OWN_WINDOW,
-		ACTIVE
-	);
-
 	//CProcess AsciiProcess("assignment1.exe",	// pathlist to child program executable
 	//	NORMAL_PRIORITY_CLASS,
 	//	OWN_WINDOW,
@@ -155,8 +149,6 @@ int main() {
 		}
 	}
 
-	IOProcess.WaitForProcess();
-	printf("IO CLOSED\n");
 	commandThread.WaitForThread();
 	printf("COMAND THREAD CLOSED\n");
 	elevatorThread1.WaitForThread();

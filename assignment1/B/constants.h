@@ -90,3 +90,67 @@ public:
 		this->sharedMutex->Signal();
 	}
 };
+
+// Objects
+class NamedPassenger {
+private:
+	CMutex* sharedMutex;
+	passengerStatus* dataPointer;
+
+	// Datapools
+	CDataPool* dpPassengerStatus;
+
+public:
+	NamedPassenger(std::string mutexName, UINT elevatorNumber) {
+		this->sharedMutex = new CMutex("__MonitorMutex__" + mutexName);
+		this->dpStatus = new CDataPool("elevatorStatusPtr" + elevatorNumber, sizeof(elevatorStatus));
+		this->dataPointer = (struct elevatorStatus*)dpStatus->LinkDataPool();
+	}
+
+	~NamedPassenger() {
+		delete this->sharedMutex;
+		delete this->dataPointer;
+		delete this->dpStatus;
+	}
+
+	void get_elevator_status(elevatorStatus &updatedStatus) {
+		this->sharedMutex->Wait();
+
+		updatedStatus = *dataPointer;
+
+		this->sharedMutex->Signal();
+	}
+};
+
+class Passenger : public ActiveClass {
+public:
+	UINT currentFloor;
+	UINT destinationFloor;
+	UINT elevatorNumber;
+	bool upOrDown;
+	bool onElevator;
+
+	Passenger() {
+		srand(time(NULL));
+		// Generate number between 0 and 9
+		currentFloor = rand() % 9;
+		destinationFloor = rand() % 9;
+
+		// going up
+		if (currentFloor < destinationFloor) {
+			upOrDown = 'u';
+		}
+		// going down
+		else {
+			upOrDown = 'd';
+		}
+
+		onElevator = false;
+		elevatorNumber = 0;
+	}
+
+	int main() {
+
+	}
+
+};

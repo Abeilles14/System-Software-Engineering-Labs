@@ -27,27 +27,7 @@ UINT __stdcall keyboardThread(void* args) {
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
 
-		// Waiting for input 1
-		input1 = _getch();
-		cout << input1;
-
-		if (input1 != '1' && input1 != '2' && input1 != 'u' && input1 != 'd' && input1 != 'e' && input1 != '+' && input1 != '-') {
-			cout << "\n\rInvalid 1st input            ";
-			continue;
-		}
-
-		// Waiting for input 2
-		input2 = _getch();
-		cout << input2 << "\n";
-
-		if (!isdigit(input2) && input2 != 'e') {
-			cout << "\rInvalid 2nd input             ";
-			continue;
-		}
-
-		if (input1 == 'e' && input2 == 'e') {		// exit sequence, return elevators to ground, open doors, end sim
-			exit_flag = true;
-		}
+		
 
 		// Wait for function to be consumed after valid input as been issued
 		IOConsumer.Wait();
@@ -131,6 +111,17 @@ int main() {
 	CThread elevatorStatusThread1(elevatorStatusIOThread1, ACTIVE, NULL);
 	CThread elevatorStatusThread2(elevatorStatusIOThread2, ACTIVE, NULL);
 
+	CProcess DispatcherProcess("dispatcher.exe",	// pathlist to child program executable
+		NORMAL_PRIORITY_CLASS,
+		OWN_WINDOW,
+		ACTIVE
+	);
+
+	for (;;) {
+
+	}
+
+	DispatcherProcess.WaitForProcess();
 	keyboardThread.WaitForThread();
 	elevatorStatusThread1.WaitForThread();
 	elevatorStatusThread2.WaitForThread();
