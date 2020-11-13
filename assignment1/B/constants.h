@@ -35,7 +35,7 @@ struct PassengerData {
 	char currentFloor;
 	char upOrDown;
 	char destinationFloor;
-	UINT elevatorNumber;
+	char elevatorNumber;
 };
 
 static const UINT elevatorTime = 500;

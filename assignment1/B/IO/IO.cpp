@@ -7,6 +7,9 @@
 
 bool exit_flag = false;
 int passenger_count = 0;
+UINT passengerCurrFloor = 0;
+UINT passengerDestFloor = 0;
+UINT elevatorNum = 0;
 
 // Terminal output mutex
 CMutex terminalOutput("TerminalOutput", 1);
@@ -117,7 +120,7 @@ UINT __stdcall passengerThread(void* args) {
 		
 		terminalOutput.Wait();
 		MOVE_CURSOR(0, 9);
-		printf("Passenger %d has arrived on floor %d\n", passenger.passengerNumber, passenger.currentFloor);
+		printf("Passenger %d is waiting on floor %d\n", passenger.passengerNumber, passenger.currentFloor);
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
 
@@ -134,15 +137,21 @@ UINT __stdcall passengerThread(void* args) {
 
 		EnterElevator.Wait();		// timeout condition, wait for IO to send elevator down and open doors to passenger
 
+		PassengerConsumer.Wait();
 		MOVE_CURSOR(0, 10);
 		printf("\rWriting destination floor to Passenger IO pipeline...");
 		MOVE_CURSOR(0, 1);
 		passengerDataPointer->destinationFloor = '0' + passenger.destinationFloor;		// send dest floor in dp
-		//passenger.elevatorNumber = ???;			// find out passenger's elevator number
+		PassengerProducer.Signal();
 
 		ExitElevator.Wait();		// timeout condition: wait for IO to send elevator to floor and open doors
 
 		passenger.elevatorNumber = 0;		// get off elevator
+		terminalOutput.Wait();
+		MOVE_CURSOR(0, 9);
+		printf("Passenger %d is exiting on floor %d\n", passenger.passengerNumber, passenger.destinationFloor);
+		MOVE_CURSOR(0, 1);
+		terminalOutput.Signal();
 
 		Sleep(2 + (rand() % 6));	// create new passenger every 2-6 sec
 	}
@@ -185,38 +194,55 @@ int main() {
 
 		PassengerConsumer.Signal();
 
-		// wait until EV1 or EV2 is at passenger floor with open doors and available and in order
+		// wait until EV1 or EV2 is at passenger pickup floor with open doors and available and in order
+		passengerCurrFloor = (UINT)(passengerDataPointer->currentFloor - '0');
+
 		for (;;) {
-			if (currentStatus1.currentFloor == passengerDataPointer->currentFloor && currentStatus1.doorStatus && currentStatus1.available && !currentStatus1.outOfOrder) {
-				passengerDataPointer->elevatorNumber = 1;
+			if (currentStatus1.currentFloor == passengerCurrFloor && currentStatus1.doorStatus && currentStatus1.available && !currentStatus1.outOfOrder) {
+				passengerDataPointer->elevatorNumber = '1';
 				break;
 			}
-			else if (currentStatus2.currentFloor == passengerDataPointer->currentFloor && currentStatus2.doorStatus && currentStatus2.available && !currentStatus2.outOfOrder) {
-				passengerDataPointer->elevatorNumber = 2;
+			else if (currentStatus2.currentFloor == passengerCurrFloor && currentStatus2.doorStatus && currentStatus2.available && !currentStatus2.outOfOrder) {
+				passengerDataPointer->elevatorNumber = '2';
 				break;
 			}
 		}
 
 		// if either elevators arrive at passenger floor, CCondition signal to enter
 		EnterElevator.Signal();
-		printf("Passenger boarding elevatorr %d\n", passengerDataPointer->elevatorNumber);
+		cout << "Passenger boarding elevator " << passengerDataPointer->elevatorNumber << "\n";
 
 		//get new passenger floor destination info
 		PassengerProducer.Wait();		// wait until data consumed before producing more data
 		
-		//TODO: need to enter correct elevator number here somehow
 		cout << "consuming data...\n" << passengerDataPointer->elevatorNumber << passengerDataPointer->destinationFloor << endl;		// get waiting passenger data
 
 		// send data to dispatcher
 		IOConsumer.Wait();
-		cout << "\rWriting data to pipeline...";
+		cout << "\rWriting destination floor to pipeline...";
 		dataPointer->input1 = passengerDataPointer->elevatorNumber;
-		dataPointer->input2 = (char) passengerDataPointer->destinationFloor;
+		dataPointer->input2 = passengerDataPointer->destinationFloor;
 
 		// Signal new data is available
 		IOProducer.Signal();
 
 		PassengerConsumer.Signal();
+
+		// wait until passenger's is at passenger dest floor with open doors
+		passengerDestFloor = (UINT)(passengerDataPointer->destinationFloor - '0');
+
+		for (;;) {
+			if (passengerDataPointer->elevatorNumber == '1') {
+				if (currentStatus1.currentFloor == passengerDestFloor && currentStatus1.doorStatus) {
+					break;
+				}
+			}
+			else {
+				if (currentStatus2.currentFloor == passengerDestFloor && currentStatus2.doorStatus) {
+					break;
+				}
+			}
+		}
 
 		//set CCondition to true
 		ExitElevator.Signal();
