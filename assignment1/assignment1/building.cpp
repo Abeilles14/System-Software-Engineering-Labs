@@ -1,15 +1,111 @@
 #include "../../rt.h"
+#include <chrono>
+#include <ctime>
+#include <conio.h>
+#include <stdio.h>
+#include "../constants.h"
 
-using namespace std;
+void drawBuilding();
+void drawElevator(int cursorX, int cursorY);
+void eraseElevator(int cursorX, int cursorY);
+//void erasePassenger(int cursorX, int cursorY);
 
-int main()
-{
+bool exit_flag = false;
+
+// Terminal output mutex
+CMutex terminalOutput("TerminalOutput", 1);
+
+UINT __stdcall elevatorStatusAsciiThread1(void* args) {
+	Named* ElevatorMonitor1 = new Named(monitorElevator1, 1);
+	elevatorStatus currentStatus;
+
+	terminalOutput.Wait();
+
+	//MOVE_CURSOR(0, 5);
+	//printf("Elevator 1 on floor 0");
+	//MOVE_CURSOR(0, 1);
+
+	terminalOutput.Signal();
+
+	for (;;) {
+
+		ElevatorIOProducer1.Wait();
+		ElevatorMonitor1->get_elevator_status(currentStatus);
+		ElevatorIOConsumer1.Signal();
+
+		// Display on terminal output
+		terminalOutput.Wait();
+
+		//MOVE_CURSOR(0, 5);
+		//printf("Elevator 1 on floor %d", currentStatus.currentFloor);
+		//MOVE_CURSOR(0, 1);
+
+		terminalOutput.Signal();
+
+		if (currentStatus.currentFloor == 0 && exit_flag) {
+			break;
+		}
+	}
 
 	return 0;
 }
 
-void drawBuilding() {
+UINT __stdcall elevatorStatusAsciiThread2(void* args) {
+	Named* ElevatorMonitor2 = new Named(monitorElevator2, 2);
+	elevatorStatus currentStatus;
 
+	terminalOutput.Wait();
+
+	/*MOVE_CURSOR(0, 6);
+	printf("Elevator 2 on floor 0");
+	MOVE_CURSOR(0, 1);*/
+
+	terminalOutput.Signal();
+
+	for (;;) {
+		ElevatorIOProducer2.Wait();
+		ElevatorMonitor2->get_elevator_status(currentStatus);
+		ElevatorIOConsumer2.Signal();
+
+		// Display on terminal output
+		terminalOutput.Wait();
+
+		//MOVE_CURSOR(0, 6);
+		//printf("Elevator 2 on floor %d", currentStatus.currentFloor);
+		//MOVE_CURSOR(0, 1);
+
+		terminalOutput.Signal();
+
+		if (currentStatus.currentFloor == 0 && exit_flag) {
+
+			break;
+		}
+	}
+
+	return 0;
+}
+
+int main() {
+	system("mode 650");
+
+	/*HWND console = GetConsoleWindow();
+	RECT rect;
+	GetWindowRect(console, &rect);
+	MoveWindow(console, rect.left, rect.top, 1400, 700, TRUE);*/
+
+	drawBuilding();
+	drawElevator(1000, 58);
+
+	CThread elevatorStatusThread1(elevatorStatusAsciiThread1, ACTIVE, NULL);
+	CThread elevatorStatusThread2(elevatorStatusAsciiThread2, ACTIVE, NULL);
+
+	elevatorStatusThread1.WaitForThread();
+	elevatorStatusThread2.WaitForThread();
+	return 0;
+}
+
+void drawBuilding() {
+	MOVE_CURSOR(0, 0);
 	cout << R"(                        _II__|
 									  [[__] |
 				______________________||  |___
@@ -75,22 +171,25 @@ void drawBuilding() {
 			|====|MMMMMMMMMMM|===|MMMMMMMMMMM|====|)";
 }
 
-void drawPassengers(int cursorX, int cursorY, int number) {
-	cout << number;
+void drawPassengers(int cursorX, int cursorY) {
+	MOVE_CURSOR(cursorX, cursorY);
+	//cout << number;
 	cout << R"(  0
                 /|\
                 / \)";
 }
 
 void drawElevator(int cursorX, int cursorY) {
+	MOVE_CURSOR(cursorX, cursorY);
 	cout << R"(
-               |  _____  |
-               |o|     |o|
-               |o|     |o|
-               | |_____| |)";
+|  _____  |
+|o|     |o|
+|o|     |o|
+| |_____| |)";
 }
 
 void eraseElevator(int cursorX, int cursorY) {
+	MOVE_CURSOR(cursorX, cursorY);
 	cout << R"(
                           
                           

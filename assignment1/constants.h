@@ -48,9 +48,6 @@ CSemaphore ElevatorDispatcherConsumer2("ElevatorDispatcherConsumer2", 1, 1);
 // Datapools
 CDataPool dpIoDispatcher("dpIoDispatcher", sizeof(struct IOData));
 
-// Terminal output mutex
-CMutex terminalOutput("TerminalOutput", 1);
-
 // monitor names
 std::string monitorElevator1 = "elevator1";
 std::string monitorElevator2 = "elevator2";

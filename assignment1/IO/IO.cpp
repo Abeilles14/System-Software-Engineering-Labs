@@ -1,5 +1,3 @@
-#pragma once
-
 #include "../../rt.h"
 #include <chrono>
 #include <ctime>
@@ -8,6 +6,10 @@
 #include "../constants.h"
 
 bool exit_flag = false;
+
+// Terminal output mutex
+CMutex terminalOutput("TerminalOutput", 1);
+
 
 UINT __stdcall keyboardThread(void* args) {
 	struct IOData* dataPointer;
@@ -86,7 +88,6 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 		if (currentStatus.currentFloor == 0 && exit_flag) {
 			break;
 		}
-		// produce data for IO C1 (done in elevator in dispatcher)
 	}
 
 	return 0;

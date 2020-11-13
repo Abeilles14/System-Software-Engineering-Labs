@@ -1,5 +1,3 @@
-#pragma once
-
 #include "../../rt.h"
 #include <chrono>
 #include <ctime>
@@ -48,6 +46,12 @@ int main() {
 		OWN_WINDOW,
 		ACTIVE
 	);
+
+	//CProcess AsciiProcess("assignment1.exe",	// pathlist to child program executable
+	//	NORMAL_PRIORITY_CLASS,
+	//	OWN_WINDOW,
+	//	ACTIVE
+	//);
 
 	// INSERT LOGIC TO DETERMINE WHICH ELEVATOR TO SEND A COMMAND TO
 
@@ -159,7 +163,8 @@ int main() {
 	printf("ELEVATOR 1 CLOSED\n");
 	elevatorThread2.WaitForThread();
 	printf("ELEVATOR 2 CLOSED\n");
-
+	//AsciiProcess.WaitForProcess();
+	//printf("ASCII CLOSED\n");
 	return 0;
 }
 
@@ -209,6 +214,7 @@ UINT __stdcall elevatorThread(void* args) {
 
 				ElevatorDispatcherProducer.Signal();
 				ElevatorIOProducer.Signal();
+
 				return 0;
 			}
 		}
@@ -222,15 +228,15 @@ UINT __stdcall elevatorThread(void* args) {
 			currentStatus.doorStatus = 0;
 			destinationFloor = currentStatus.currentFloor;
 
-				ElevatorIOConsumer.Wait();
-				ElevatorDispatcherConsumer.Wait();
+			ElevatorIOConsumer.Wait();
+			ElevatorDispatcherConsumer.Wait();
 
-				ElevatorMonitor->update_elevator_status(currentStatus);
+			ElevatorMonitor->update_elevator_status(currentStatus);
 
-				ElevatorDispatcherProducer.Signal();
-				ElevatorIOProducer.Signal();
+			ElevatorDispatcherProducer.Signal();
+			ElevatorIOProducer.Signal();
 
-				Sleep(elevatorTime * 3);
+			Sleep(elevatorTime * 3);
 
 			continue;
 		}
@@ -248,6 +254,19 @@ UINT __stdcall elevatorThread(void* args) {
 
 			ElevatorDispatcherProducer.Signal();
 			ElevatorIOProducer.Signal();
+		}
+		else {
+			ElevatorIOConsumer.Wait();
+			ElevatorDispatcherConsumer.Wait();
+
+			currentStatus.available = 1;
+
+			ElevatorMonitor->update_elevator_status(currentStatus);
+
+			ElevatorDispatcherProducer.Signal();
+			ElevatorIOProducer.Signal();
+
+			Sleep(elevatorTime);
 		}
 
 		// Close doors and move to floor needed
