@@ -66,34 +66,34 @@ int main() {
 		case requestUp:
 			// INSERT LOGIC FOR AN UP REQUEST. Probably compares current/destination floor of elevator with source of request
 			// Check if either elevator is free
-			if (elevator1.outOfOrder == false && elevator1.available == true && 
+			if (elevatorOutOfOrder[0] == false && elevator1.available == true &&
 				abs((int)(elevator1Dest - waitingFloor)) <= abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread1.Post(waitingFloor);
 				elevator1Dest = waitingFloor;
 			}
 
-			else if (elevator2.outOfOrder == false &&elevator2.available == true && 
+			else if (elevatorOutOfOrder[1] == false &&elevator2.available == true &&
 				abs((int)(elevator1Dest - waitingFloor)) >= abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread2.Post(waitingFloor);
 				elevator2Dest = waitingFloor;
 			}
 			
-			else if (elevator1.outOfOrder == false && elevator1.headingDirection == 1) {
+			else if (elevatorOutOfOrder[0] == false && elevator1.headingDirection == 1) {
 				elevatorThread1.Post(waitingFloor);
 				elevator1Dest = waitingFloor;
 			}
-			else if (elevator2.outOfOrder == false && elevator2.headingDirection == 1) {
+			else if (elevatorOutOfOrder[1] == false && elevator2.headingDirection == 1) {
 				elevatorThread2.Post(waitingFloor);
 				elevator2Dest = waitingFloor;
 			}
 
 			// If neither elevator is near/on its way, check which one is nearest and send it based on last destination
-			else if (elevator1.outOfOrder == false && 
+			else if (elevatorOutOfOrder[0] == false &&
 				abs((int)(elevator1Dest - waitingFloor)) < abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread1.Post(waitingFloor);
 				elevator1Dest = waitingFloor;
 			}
-			else if (elevator2.outOfOrder == false){
+			else if (elevatorOutOfOrder[1] == false){
 				elevatorThread2.Post(waitingFloor);
 				elevator2Dest = waitingFloor;
 			}
@@ -105,34 +105,34 @@ int main() {
 
 		case requestDown:
 			// Check if either elevator is free
-			if (elevator1.outOfOrder == false && elevator1.available == true && 
+			if (elevatorOutOfOrder[0] == false && elevator1.available == true &&
 				abs((int)(elevator1Dest - waitingFloor)) <= abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread1.Post(waitingFloor);
 				elevator1Dest = waitingFloor;
 			}
 
-			else if (elevator2.outOfOrder == false && elevator2.available == true && 
+			else if (elevatorOutOfOrder[1] == false && elevator2.available == true &&
 				abs((int)(elevator1Dest - waitingFloor)) >= abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread2.Post(waitingFloor);
 				elevator2Dest = waitingFloor;
 			}
 
-			else if (elevator1.outOfOrder == false && elevator1.headingDirection == 0) {
+			else if (elevatorOutOfOrder[0] == false && elevator1.headingDirection == 0) {
 				elevatorThread1.Post(waitingFloor);
 				elevator1Dest = waitingFloor;
 			}
-			else if (elevator2.outOfOrder == false && elevator2.headingDirection == 0) {
+			else if (elevatorOutOfOrder[1] == false && elevator2.headingDirection == 0) {
 				elevatorThread2.Post(waitingFloor);
 				elevator2Dest = waitingFloor;
 			}
 
 			// If neither elevator is near/on its way, check which one is nearest and send it based on last destination
-			else if (elevator1.outOfOrder == false && 
+			else if (elevatorOutOfOrder[0] == false &&
 				abs((int)(elevator1Dest - waitingFloor)) < abs((int)(elevator2Dest - waitingFloor))) {
 				elevatorThread1.Post(waitingFloor);
 				elevator1Dest = waitingFloor;
 			}
-			else if (elevator2.outOfOrder == false) {
+			else if (elevatorOutOfOrder[1] == false) {
 				elevatorThread2.Post(waitingFloor);
 				elevator2Dest = waitingFloor;
 			}
@@ -218,7 +218,7 @@ UINT __stdcall elevatorThread(void* args) {
 			printf("elevator %d out of order\n", elevatorNumber);
 
 			currentStatus.outOfOrder = 1;
-			currentStatus.available = 0;
+			currentStatus.available = 1;
 			currentStatus.doorStatus = 0;
 			destinationFloor = currentStatus.currentFloor;
 
@@ -232,7 +232,7 @@ UINT __stdcall elevatorThread(void* args) {
 
 				Sleep(elevatorTime * 3);
 
-			//continue;
+			continue;
 		}
 
 		// Close doors
@@ -256,7 +256,7 @@ UINT __stdcall elevatorThread(void* args) {
 				break;
 			}
 
-			currentStatus.outOfOrder = 1;
+			currentStatus.outOfOrder = 0;
 			currentStatus.doorStatus = 0;
 			currentStatus.available = 0;
 
