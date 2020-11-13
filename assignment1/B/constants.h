@@ -18,17 +18,40 @@ struct elevatorStatus {
 	bool available;				// 0 = busy, 1 = free
 };
 
+struct passengerStatus {
+	UINT currentFloor;
+	UINT destinationFloor;
+	UINT elevatorNumber;
+	bool inElevator;
+	bool arrivedDestination;
+};
+
 struct IOData {
 	char input1;
 	char input2;
 };
 
+struct PassengerData {
+	UINT currentFloor;
+	char upOrDown;
+	UINT destinationFloor;
+	UINT elevatorNumber;
+};
+
 static const UINT elevatorTime = 500;
+
+// Synchronization CCondition 
+CCondition EnterElevator("Enter");   		// create a non-signalled condition
+CCondition ExitElevator("Exit");
 
 // Semaphores
 // IO - Dispatcher
 CSemaphore IOProducer("IOProducer", 0);
 CSemaphore IOConsumer("IOConsumer", 1);
+
+// Passenger - IO
+CSemaphore PassengerProducer("PassengerProducer", 0);
+CSemaphore PassengerConsumer("PassengerConsumer", 1);
 
 // Monitor
 CSemaphore MonitorOutput("MonitorOutput", 1);
@@ -47,6 +70,7 @@ CSemaphore ElevatorDispatcherConsumer2("ElevatorDispatcherConsumer2", 1, 1);
 
 // Datapools
 CDataPool dpIoDispatcher("dpIoDispatcher", sizeof(struct IOData));
+CDataPool dpPassengerIO("dpPassengerIO", sizeof(struct PassengerData));
 
 // monitor names
 std::string monitorElevator1 = "elevator1";
@@ -95,28 +119,36 @@ public:
 class NamedPassenger {
 private:
 	CMutex* sharedMutex;
-	passengerStatus* dataPointer;
+	passengerStatus* passengerDataPointer;
 
 	// Datapools
 	CDataPool* dpPassengerStatus;
 
 public:
-	NamedPassenger(std::string mutexName, UINT elevatorNumber) {
+	NamedPassenger(std::string mutexName) {
 		this->sharedMutex = new CMutex("__MonitorMutex__" + mutexName);
-		this->dpStatus = new CDataPool("elevatorStatusPtr" + elevatorNumber, sizeof(elevatorStatus));
-		this->dataPointer = (struct elevatorStatus*)dpStatus->LinkDataPool();
+		this->dpPassengerStatus = new CDataPool("passengerStatusPtr", sizeof(elevatorStatus));
+		this->passengerDataPointer = (struct passengerStatus*)dpPassengerStatus->LinkDataPool();
 	}
 
 	~NamedPassenger() {
 		delete this->sharedMutex;
-		delete this->dataPointer;
-		delete this->dpStatus;
+		delete this->passengerDataPointer;
+		delete this->dpPassengerStatus;
 	}
 
-	void get_elevator_status(elevatorStatus &updatedStatus) {
+	void get_passenger_status(passengerStatus &updatedStatus) {
 		this->sharedMutex->Wait();
 
-		updatedStatus = *dataPointer;
+		updatedStatus = *passengerDataPointer;
+
+		this->sharedMutex->Signal();
+	}
+
+	void update_elevator_status(passengerStatus updatedStatus) {
+		this->sharedMutex->Wait();
+
+		*passengerDataPointer = updatedStatus;
 
 		this->sharedMutex->Signal();
 	}
@@ -126,11 +158,13 @@ class Passenger : public ActiveClass {
 public:
 	UINT currentFloor;
 	UINT destinationFloor;
-	UINT elevatorNumber;
-	bool upOrDown;
-	bool onElevator;
+	UINT elevatorNumber;		// on which elevator	0 = off, 1 = EV1, 2 = EV2
+	UINT passengerNumber = 0;		// passenger count/number
+	char upOrDown;
 
-	Passenger() {
+	Passenger(int number) {
+		this->passengerNumber = number;
+
 		srand(time(NULL));
 		// Generate number between 0 and 9
 		currentFloor = rand() % 9;
@@ -145,12 +179,15 @@ public:
 			upOrDown = 'd';
 		}
 
-		onElevator = false;
 		elevatorNumber = 0;
+	}
+
+	~Passenger() {
 	}
 
 	int main() {
 
+		return 0;
 	}
 
 };

@@ -41,6 +41,12 @@ int main() {
 	CThread elevatorDispatcherThread1(elevatorStatusThread1, ACTIVE, NULL);
 	CThread elevatorDispatcherThread2(elevatorStatusThread2, ACTIVE, NULL);
 
+	CProcess IOProcess("IO.exe",	// pathlist to child program executable
+		NORMAL_PRIORITY_CLASS,
+		OWN_WINDOW,
+		ACTIVE
+	);
+
 	//CProcess AsciiProcess("assignment1.exe",	// pathlist to child program executable
 	//	NORMAL_PRIORITY_CLASS,
 	//	OWN_WINDOW,
@@ -149,6 +155,8 @@ int main() {
 		}
 	}
 
+	IOProcess.WaitForProcess();
+	printf("IO CLOSED\n");
 	commandThread.WaitForThread();
 	printf("COMAND THREAD CLOSED\n");
 	elevatorThread1.WaitForThread();
@@ -372,7 +380,7 @@ UINT __stdcall commandThread(void* args) {
 		struct IOData* dataPointer;
 		dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
 
-		IOProducer.Wait();		// wait until data consumed before producing more data
+		IOProducer.Wait();
 		cout << "consuming data...\n" << dataPointer->input1 << dataPointer->input2 << endl;
 
 		switch (dataPointer->input1) {
