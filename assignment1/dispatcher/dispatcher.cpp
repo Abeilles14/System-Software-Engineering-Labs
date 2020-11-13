@@ -4,6 +4,7 @@
 #include <chrono>
 #include <ctime>
 #include <cstdlib>
+#include <stdlib.h>
 #include "../constants.h"
 
 elevatorStatus elevator1;
@@ -17,8 +18,7 @@ UINT waitingFloor = 0;
 
 // 0 = down, 1 = up
 bool waitingDirection;
-bool elevator1OutOfOrder = 0;
-bool elevator2OutOfOrder = 0;
+bool elevatorOutOfOrder[2] = { 0 };
 
 UINT currentCommand;
 
@@ -138,13 +138,13 @@ int main() {
 	}
 
 	IOProcess.WaitForProcess();
-	cout << "IO CLOSED";
+	printf("IO CLOSED\n");
 	commandThread.WaitForThread();
-	cout << "COMAND THREAD CLOSED\n";
+	printf("COMAND THREAD CLOSED\n");
 	elevatorThread1.WaitForThread();
-	cout << "ELEVATOR 1 CLOSED\n";
+	printf("ELEVATOR 1 CLOSED\n");
 	elevatorThread2.WaitForThread();
-	cout << "ELEVATOR 2 CLOSED\n";
+	printf("ELEVATOR 2 CLOSED\n");
 
 	return 0;
 }
@@ -200,22 +200,21 @@ UINT __stdcall elevatorThread(void* args) {
 		}
 
 		// If elevator is out of order
-		if (currentStatus.outOfOrder) {
-			ElevatorIOConsumer.Wait();
-			ElevatorDispatcherConsumer.Wait();
+		if (elevatorOutOfOrder[elevatorNumber-1]) {
+			printf("elevator %d out of order\n", elevatorNumber);
 
-			cout << "elevator " << elevatorNumber << " out of order\n";
-			cout << "elevator " << elevatorNumber << " doors closed\n";
+			while (elevatorOutOfOrder[elevatorNumber - 1]) {
+				ElevatorIOConsumer.Wait();
+				ElevatorDispatcherConsumer.Wait();
 
-			currentStatus.outOfOrder = 1;
-			currentStatus.doorStatus = 0;
-			currentStatus.available = 0;
+				currentStatus.outOfOrder = 1;
+				currentStatus.available = 0;
 
 
-			ElevatorDispatcherProducer.Signal();
-			ElevatorIOProducer.Signal();
-
-			continue;
+				ElevatorDispatcherProducer.Signal();
+				ElevatorIOProducer.Signal();
+			}
+			//continue;
 		}
 
 		// Close doors
@@ -225,7 +224,7 @@ UINT __stdcall elevatorThread(void* args) {
 			ElevatorDispatcherConsumer.Wait();
 
 			currentStatus.doorStatus = 0;
-			cout << "elevator " << elevatorNumber << " doors closed\n";
+			printf("elevator %d doors closed\n", elevatorNumber);
 			
 			ElevatorMonitor->update_elevator_status(currentStatus);
 
@@ -247,15 +246,16 @@ UINT __stdcall elevatorThread(void* args) {
 			if (currentStatus.currentFloor < destinationFloor) {
 				currentStatus.headingDirection = 1;
 				currentStatus.currentFloor++;
-				cout << "elevator " << elevatorNumber << " going up\n";
-				cout << "elevator " << elevatorNumber << " at floor " << currentStatus.currentFloor << "\n";
+
+				printf("elevator %d going up\n", elevatorNumber);
+				printf("elevator %d at floor %d\n", elevatorNumber, currentStatus.currentFloor);
 			}
 
 			else {
 				currentStatus.headingDirection = 0;
 				currentStatus.currentFloor--;
-				cout << "elevator " << elevatorNumber << " going down\n";
-				cout << "elevator " << elevatorNumber << " at floor " << currentStatus.currentFloor << "\n";
+				printf("elevator %d going down\n", elevatorNumber);
+				printf("elevator %d at floor %d\n", elevatorNumber, currentStatus.currentFloor);
 			}
 
 			ElevatorIOConsumer.Wait();
@@ -273,7 +273,7 @@ UINT __stdcall elevatorThread(void* args) {
 
 				currentStatus.doorStatus = 1;
 				currentStatus.available = 1;
-				cout << "elevator " << elevatorNumber << " doors open\n";
+				printf("elevator %d doors open\n", elevatorNumber);
 
 				ElevatorMonitor->update_elevator_status(currentStatus);
 
@@ -364,21 +364,21 @@ UINT __stdcall commandThread(void* args) {
 		case '+':
 			
 			if (dataPointer->input2 == '1') {
-				elevator1OutOfOrder = false;
+				elevatorOutOfOrder[0] = false;
 			}
 
 			else {
-				elevator2OutOfOrder = false;
+				elevatorOutOfOrder[1] = false;
 			}
 			break;
 
 		case '-':
 			if (dataPointer->input2 == '1') {
-				elevator1OutOfOrder = true;
+				elevatorOutOfOrder[0] = true;
 			}
 
 			else {
-				elevator2OutOfOrder = true;
+				elevatorOutOfOrder[1] = true;
 			}
 			break;
 
@@ -387,12 +387,12 @@ UINT __stdcall commandThread(void* args) {
 			waitingDirection = 0;
 			currentCommand = requestDown;
 
-			cout << "Ending simulation, returning elevators to ground floor\n";
+			printf("Ending simulation, returning elevators to ground floor\n");
 			exit_flag = true;
 			break;
 
 		default:
-			cout << "CRITICAL ERROR, ELEVATOR CRASHING";
+			printf("CRITICAL ERROR, ELEVATOR CRASHING");
 			break;
 		}
 
