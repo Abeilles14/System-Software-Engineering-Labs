@@ -75,7 +75,6 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 	terminalOutput.Signal();
 
 	for(;;) {
-
 		ElevatorIOProducer1.Wait();
 		ElevatorMonitor1->get_elevator_status(currentStatus1);
 		ElevatorIOConsumer1.Signal();
@@ -200,14 +199,14 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 			
 			break;
 		}
-		Sleep(1);
+		Sleep(1000);
 	}
 
 	return 0;
 }
 
 int main() {
-	CThread keyboardThread(keyboardThread, ACTIVE, NULL);
+	//CThread keyboardThread(keyboardThread, ACTIVE, NULL);
 	CThread elevatorStatusThread1(elevatorStatusIOThread1, ACTIVE, NULL);
 	CThread elevatorStatusThread2(elevatorStatusIOThread2, ACTIVE, NULL);
 
@@ -224,9 +223,14 @@ int main() {
 	// Passenger IO datapool
 	struct PassengerData* passengerDataPointer;
 	passengerDataPointer = (struct PassengerData*)dpPassengerIO.LinkDataPool();
+	
+	Passenger* passengerPtr = NULL;
+
+	passengerPtr = new Passenger();
+	passengerPtr->Resume();
 
 	for (;;) {
-		new Passenger();
+
 		PassengerProducer.Wait();		// wait until data consumed before producing more data
 		cout << "IO consuming Passenger data...\n" << passengerDataPointer->input1 << passengerDataPointer->input2 << endl;
 
@@ -240,12 +244,12 @@ int main() {
 		IOProducer.Signal();
 		PassengerConsumer.Signal();
 
-		Sleep(10000);
+		//getchar();
 		//Sleep(4 + (rand() % 10));		// create new passenger every 4-10 sec
 	}
 
 	DispatcherProcess.WaitForProcess();
-	keyboardThread.WaitForThread();
+	//keyboardThread.WaitForThread();
 	elevatorStatusThread1.WaitForThread();
 	elevatorStatusThread2.WaitForThread();
 

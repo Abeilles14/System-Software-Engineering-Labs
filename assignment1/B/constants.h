@@ -244,7 +244,7 @@ public:
 				passengerDataPointer->input1 = 'd';
 			}
 			
-			passengerDataPointer->input2 = '0' + currentFloor;		// send curr floor and direction in dp as char
+			passengerDataPointer->input2 = char('0' + currentFloor);		// send curr floor and direction in dp as char
 
 			// Signal new data is available
 			PassengerProducer.Signal();
@@ -271,8 +271,8 @@ public:
 			MOVE_CURSOR(0, 10);
 			printf("\rWriting destination floor to Passenger IO pipeline...");
 			MOVE_CURSOR(0, 1);
-			passengerDataPointer->input1 = elevatorNumber;				// TODO: Use monitor instead to update??
-			passengerDataPointer->input2 = '0' + destinationFloor;		// send curr floor and direction in dp as char
+			passengerDataPointer->input1 = char('0' + elevatorNumber);
+			passengerDataPointer->input2 = char('0' + destinationFloor);		// send curr floor and direction in dp as char
 			PassengerProducer.Signal();
 
 			// Wait to arrive at correct floor

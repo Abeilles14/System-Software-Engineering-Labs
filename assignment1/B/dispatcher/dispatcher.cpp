@@ -431,7 +431,7 @@ UINT __stdcall commandThread(void* args) {
 			break;
 
 		default:
-			printf("CRITICAL ERROR, ELEVATOR CRASHING");
+			printf("CRITICAL ERROR, ELEVATOR CRASHING");;
 			break;
 		}
 

@@ -13,7 +13,7 @@ void eraseElevator(int cursorX, int cursorY);
 bool exit_flag = false;
 
 // Terminal output mutex
-CMutex terminalOutput("TerminalOutput", 1);
+//CMutex terminalOutput("TerminalOutput", 1);
 
 UINT __stdcall elevatorStatusAsciiThread1(void* args) {
 	Named* ElevatorMonitor1 = new Named(monitorElevator1, 1);
