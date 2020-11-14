@@ -2,7 +2,6 @@
 *.d
 /.vs
 /x64
-*/.vs
 
 # Compiled Object files
 *.slo
@@ -40,8 +39,13 @@
 *.ipch
 *.ilk
 *.pdb
+*.sln
 *.log
 *.tlog
 *.lastbuildstate
 *.idb
+*.vcxproj
+*.filters
+*.user
 *.opendb
+
