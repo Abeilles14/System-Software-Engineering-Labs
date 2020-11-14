@@ -156,11 +156,11 @@ int main() {
 		}
 	}
 
-	commandThread.WaitForThread();
+	commandThread.WaitForThread(1000);
 	printf("COMAND THREAD CLOSED\n");
-	elevatorThread1.WaitForThread();
+	elevatorThread1.WaitForThread(5000);
 	printf("ELEVATOR 1 CLOSED\n");
-	elevatorThread2.WaitForThread();
+	elevatorThread2.WaitForThread(5000);
 	printf("ELEVATOR 2 CLOSED\n");
 	//AsciiProcess.WaitForProcess();
 	//printf("ASCII CLOSED\n");
@@ -206,6 +206,7 @@ UINT __stdcall elevatorThread(void* args) {
 			destinationFloor = 0;
 
 			if (currentStatus.currentFloor == 0) {
+
 				ElevatorIOConsumer.Wait();
 				ElevatorDispatcherConsumer.Wait();
 
@@ -216,6 +217,8 @@ UINT __stdcall elevatorThread(void* args) {
 
 				return 0;
 			}
+
+			Sleep(500);
 		}
 
 		ElevatorRequest.Wait();
