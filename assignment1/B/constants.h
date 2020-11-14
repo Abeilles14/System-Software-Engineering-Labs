@@ -178,7 +178,7 @@ public:
 		else {
 			upOrDown = 'd';
 		}
-
+		gfdf
 		elevatorNumber = 0;
 	}
 
@@ -186,8 +186,55 @@ public:
 	}
 
 	int main() {
+		struct PassengerData* passengerDataPointer;
+		passengerDataPointer = (struct PassengerData*)dpPassengerIO.LinkDataPool();
 
-		return 0;
+		while (!exit_flag) {				// currently only lets 1 passenger call at a time...
+			//create passengers
+
+			terminalOutput.Wait();
+			MOVE_CURSOR(0, 9);
+			printf("Passenger %d is waiting on floor %d\n", this.passengerNumber, this.currentFloor);
+			MOVE_CURSOR(0, 1);
+			terminalOutput.Signal();
+
+			// Wait for function to be consumed after valid input as been issued
+			PassengerConsumer.Wait();
+			MOVE_CURSOR(0, 10);
+			printf("\rWriting floor and direction to Passenger IO pipeline...");
+			MOVE_CURSOR(0, 1);
+			passengerDataPointer->upOrDown = this.upOrDown;				// TODO: Use monitor instead to update??
+			passengerDataPointer->currentFloor = '0' + this.currentFloor;		// send curr floor and direction in dp as char
+
+			// Signal new data is available
+			PassengerProducer.Signal();
+
+			EnterElevator.Wait();		// timeout condition, wait for IO to send elevator down and open doors to passenger
+
+			PassengerConsumer.Wait();
+			MOVE_CURSOR(0, 10);
+			printf("\rWriting destination floor to Passenger IO pipeline...");
+			MOVE_CURSOR(0, 1);
+			passengerDataPointer->destinationFloor = '0' + this.destinationFloor;		// send dest floor in dp
+			PassengerProducer.Signal();
+
+			ExitElevator.Wait();		// timeout condition: wait for IO to send elevator to floor and open doors
+
+			terminalOutput.Wait();
+			MOVE_CURSOR(0, 12);
+			printf("Passenger %d is exiting on floor %d\n", this.passengerNumber, this.destinationFloor);
+			MOVE_CURSOR(0, 1);
+			terminalOutput.Signal();
+
+			// Destroy Passenger
+			return 0;
+		}
 	}
+
+
+
+
+
+
 
 };

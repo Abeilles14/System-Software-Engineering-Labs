@@ -108,60 +108,34 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 	return 0;
 }
 
-UINT __stdcall passengerThread(void* args) {
-	struct PassengerData* passengerDataPointer;
-	passengerDataPointer = (struct PassengerData*)dpPassengerIO.LinkDataPool();
+UINT __stdcall passengerStatusThread(void* args) {
+	NamedPassenger* PassengerMonitor = new NamedPassenger("Passenger" + passenger.passengerNumber);
+	passengerStatus currentPassengerStatus;
 
-	while (!exit_flag) {				// currently only lets 1 passenger call at a time...
-		//create passengers
-		passenger_count++;
-		Passenger passenger(passenger_count);
-		NamedPassenger* PassengerMonitor = new NamedPassenger("Passenger" + passenger.passengerNumber);
-		
+	for (;;) {
+		PassengerProducer.Wait();
+		PassengerMonitor->get_passenger_status(currentPassengerStatus);
+		PassengerConsumer.Signal();
+
+		// Display on terminal output
 		terminalOutput.Wait();
-		MOVE_CURSOR(0, 9);
-		printf("Passenger %d is waiting on floor %d\n", passenger.passengerNumber, passenger.currentFloor);
+		MOVE_CURSOR(0, 6);
+		printf("Elevator 2 on floor %d", currentStatus2.currentFloor);
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
 
-		// Wait for function to be consumed after valid input as been issued
-		PassengerConsumer.Wait();
-		MOVE_CURSOR(0, 10);
-		printf("\rWriting floor and direction to Passenger IO pipeline...");
-		MOVE_CURSOR(0, 1);
-		passengerDataPointer->upOrDown = passenger.upOrDown;				// TODO: Use monitor instead to update??
-		passengerDataPointer->currentFloor = '0' + passenger.currentFloor;		// send curr floor and direction in dp as char
+		if (currentStatus2.currentFloor == 0 && exit_flag) {
 
-		// Signal new data is available
-		PassengerProducer.Signal();
-
-		EnterElevator.Wait();		// timeout condition, wait for IO to send elevator down and open doors to passenger
-
-		PassengerConsumer.Wait();
-		MOVE_CURSOR(0, 10);
-		printf("\rWriting destination floor to Passenger IO pipeline...");
-		MOVE_CURSOR(0, 1);
-		passengerDataPointer->destinationFloor = '0' + passenger.destinationFloor;		// send dest floor in dp
-		PassengerProducer.Signal();
-
-		ExitElevator.Wait();		// timeout condition: wait for IO to send elevator to floor and open doors
-
-		passenger.elevatorNumber = 0;		// get off elevator
-		terminalOutput.Wait();
-		MOVE_CURSOR(0, 9);
-		printf("Passenger %d is exiting on floor %d\n", passenger.passengerNumber, passenger.destinationFloor);
-		MOVE_CURSOR(0, 1);
-		terminalOutput.Signal();
-
-		Sleep(2 + (rand() % 6));	// create new passenger every 2-6 sec
+			break;
+		}
 	}
 
 	return 0;
 }
 
 int main() {
-	CThread passengerThread(passengerThread, ACTIVE, NULL);
-	//CThread keyboardThread(keyboardThread, ACTIVE, NULL);
+	//CThread passengerThread(passengerThread, ACTIVE, NULL);
+	CThread keyboardThread(keyboardThread, ACTIVE, NULL);
 	CThread elevatorStatusThread1(elevatorStatusIOThread1, ACTIVE, NULL);
 	CThread elevatorStatusThread2(elevatorStatusIOThread2, ACTIVE, NULL);
 
@@ -175,7 +149,7 @@ int main() {
 	struct IOData* dataPointer;
 	dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
 
-	// Passener IO datapool
+	// Passenger IO datapool
 	struct PassengerData* passengerDataPointer;
 	passengerDataPointer = (struct PassengerData*)dpPassengerIO.LinkDataPool();
 
@@ -252,7 +226,7 @@ int main() {
 
 	passengerThread.WaitForThread();
 	DispatcherProcess.WaitForProcess();
-	//keyboardThread.WaitForThread();
+	keyboardThread.WaitForThread();
 	elevatorStatusThread1.WaitForThread();
 	elevatorStatusThread2.WaitForThread();
 
