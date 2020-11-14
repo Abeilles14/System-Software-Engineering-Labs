@@ -86,7 +86,7 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 		// Display on terminal output
 		terminalOutput.Wait();
 		MOVE_CURSOR(0, 5);
-		printf("Elevator 1 on floor %d", currentStatus1.currentFloor);
+		printf("Elevator 1 on floor %d with %d passengers", currentStatus1.currentFloor, elevator1PassengerNumber);
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
 
@@ -173,7 +173,7 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 		// Display on terminal output
 		terminalOutput.Wait();
 		MOVE_CURSOR(0, 6);
-		printf("Elevator 2 on floor %d", currentStatus2.currentFloor);
+		printf("Elevator 2 on floor %d with %d passengers", currentStatus2.currentFloor, elevator2PassengerNumber);
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
 

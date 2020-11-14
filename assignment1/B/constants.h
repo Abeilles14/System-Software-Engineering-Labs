@@ -73,6 +73,11 @@ CSemaphore ElevatorDispatcherConsumer2("ElevatorDispatcherConsumer2", 1, 1);
 CSemaphore Elevator1Passengers("Elevator1Passengers", 1, 4);
 CSemaphore Elevator2Passengers("Elevator2Passengers", 1, 4);
 
+uint8_t elevator1PassengerNumber = 0;
+uint8_t elevator2PassengerNumber = 0;
+
+uint16_t totalPassengers = 0;
+
 // Datapools
 CDataPool dpIoDispatcher("dpIoDispatcher", sizeof(struct IOData));
 CDataPool dpPassengerIO("dpPassengerIO", sizeof(struct PassengerData));
@@ -219,6 +224,13 @@ public:
 			upOrDown = 0;
 		}
 		elevatorNumber = 0;
+
+		totalPassengers++;
+		terminalOutput.Wait();
+		MOVE_CURSOR(0, 7);
+		printf("TOTAL PASSENGERS: %d", totalPassengers);
+		MOVE_CURSOR(0, 1);
+		terminalOutput.Signal();
 	}
 
 	~Passenger() {
@@ -262,8 +274,14 @@ public:
 					(Elevator1UpOrDown[upOrDown]->Wait(10) == WAIT_TIMEOUT && Elevator1Available->Wait(10) == WAIT_TIMEOUT) ||
 					Elevator1Open->Wait(10) == WAIT_TIMEOUT) {}
 				else {
-					elevatorNumber = 1;
-					break;
+					if (Elevator1Passengers.Wait(10) == WAIT_TIMEOUT) {}
+
+					else {
+						elevatorNumber = 1;
+						elevator1PassengerNumber++;
+						break;
+					}
+
 				}
 
 
@@ -272,8 +290,13 @@ public:
 					Elevator2Open->Wait(10) == WAIT_TIMEOUT) {
 				}
 				else {
-					elevatorNumber = 2;
-					break;
+					if (Elevator2Passengers.Wait(10) == WAIT_TIMEOUT) {}
+
+					else {
+						elevatorNumber = 2;
+						elevator2PassengerNumber++;
+						break;
+					}
 				}
 			}
 
@@ -296,6 +319,8 @@ public:
 				if (elevatorNumber == 1) {
 					if (Elevator1Floor[destinationFloor]->Wait(10) == WAIT_TIMEOUT || Elevator1Open->Wait(10) == WAIT_TIMEOUT) {}
 					else {
+						elevator1PassengerNumber--;
+						Elevator1Passengers.Signal();
 						break;
 					}
 				}
@@ -303,6 +328,8 @@ public:
 				else {
 					if (Elevator2Floor[destinationFloor]->Wait(10) == WAIT_TIMEOUT || Elevator2Open->Wait(10) == WAIT_TIMEOUT) {}
 					else {
+						elevator2PassengerNumber--;
+						Elevator2Passengers.Signal();
 						break;
 					}
 
@@ -310,9 +337,12 @@ public:
 			}
 			//ExitElevator.Wait();		// timeout condition: wait for IO to send elevator to floor and open doors
 
+			totalPassengers--;
 			terminalOutput.Wait();
 			MOVE_CURSOR(0, 22);
 			printf("Passenger is exiting on floor %d\n", destinationFloor);
+			MOVE_CURSOR(0, 7);
+			printf("TOTAL PASSENGERS: %d\r", totalPassengers);
 			MOVE_CURSOR(0, 1);
 			terminalOutput.Signal();
 
