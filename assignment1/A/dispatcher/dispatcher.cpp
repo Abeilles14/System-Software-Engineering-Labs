@@ -47,11 +47,11 @@ int main() {
 		ACTIVE
 	);
 
-	//CProcess AsciiProcess("assignment1.exe",	// pathlist to child program executable
-	//	NORMAL_PRIORITY_CLASS,
-	//	OWN_WINDOW,
-	//	ACTIVE
-	//);
+	CProcess AsciiProcess("assignment1.exe",	// pathlist to child program executable
+		NORMAL_PRIORITY_CLASS,
+		OWN_WINDOW,
+		ACTIVE
+	);
 
 	// INSERT LOGIC TO DETERMINE WHICH ELEVATOR TO SEND A COMMAND TO
 
@@ -163,8 +163,8 @@ int main() {
 	printf("ELEVATOR 1 CLOSED\n");
 	elevatorThread2.WaitForThread();
 	printf("ELEVATOR 2 CLOSED\n");
-	//AsciiProcess.WaitForProcess();
-	//printf("ASCII CLOSED\n");
+	AsciiProcess.WaitForProcess();
+	printf("ASCII CLOSED\n");
 	return 0;
 }
 

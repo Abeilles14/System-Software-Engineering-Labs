@@ -255,7 +255,7 @@ UINT __stdcall passengerThread(void* args) {
 }
 
 int main() {
-	//CThread keyboardThread(keyboardThread, ACTIVE, NULL);
+	CThread keyboardThread(keyboardThread, ACTIVE, NULL);
 	CThread elevatorStatusThread1(elevatorStatusIOThread1, ACTIVE, NULL);
 	CThread elevatorStatusThread2(elevatorStatusIOThread2, ACTIVE, NULL);
 	CThread passengerThread1(passengerThread, ACTIVE, NULL);
@@ -265,6 +265,13 @@ int main() {
 		OWN_WINDOW,
 		ACTIVE
 	);
+
+	CProcess AsciiProcess("assignment1.exe",	// pathlist to child program executable
+		NORMAL_PRIORITY_CLASS,
+		OWN_WINDOW,
+		ACTIVE
+	);
+
 
 	// IO dispatcher datapool
 	struct IOData* dataPointer;
@@ -297,9 +304,10 @@ int main() {
 	}
 
 	DispatcherProcess.WaitForProcess();
-	//keyboardThread.WaitForThread();
+	keyboardThread.WaitForThread();
 	elevatorStatusThread1.WaitForThread();
 	elevatorStatusThread2.WaitForThread();
+	AsciiProcess.WaitForProcess();
 
 	return 0;
 }
