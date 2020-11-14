@@ -23,11 +23,10 @@ UINT __stdcall elevatorStatusAsciiThread1(void* args) {
 		ElevatorIOConsumer1.Signal();
 
 		// Display on terminal output
-
 		terminalOutput.Wait();
 
 		MOVE_CURSOR(50, 44 - 4 * (currentStatus.currentFloor));
-		printf("EV1 %d", elevator1PassengerNumber);
+		printf("EV1 %d", currentStatus.doorStatus);
 		MOVE_CURSOR(50, 44 - 4 * (currentStatus.currentFloor) + 4);
 		printf("     ");
 		MOVE_CURSOR(50, 44 - 4 * (currentStatus.currentFloor) - 4);
@@ -56,7 +55,7 @@ UINT __stdcall elevatorStatusAsciiThread2(void* args) {
 		terminalOutput.Wait();
 
 		MOVE_CURSOR(34, 44 - 4 * (currentStatus.currentFloor));
-		printf("EV2 %d", elevator2PassengerNumber);
+		printf("EV2 %d", currentStatus.doorStatus);
 		MOVE_CURSOR(34, 44 - 4 * (currentStatus.currentFloor) + 4);
 		printf("     ");
 		MOVE_CURSOR(34, 44 - 4 * (currentStatus.currentFloor) - 4);
