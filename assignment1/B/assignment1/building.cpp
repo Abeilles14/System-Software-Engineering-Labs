@@ -12,9 +12,6 @@ void eraseElevator(int cursorX, int cursorY);
 
 bool exit_flag = false;
 
-// Terminal output mutex
-//CMutex terminalOutput("TerminalOutput", 1);
-
 UINT __stdcall elevatorStatusAsciiThread1(void* args) {
 	Named* ElevatorMonitor1 = new Named(monitorElevator1, 1);
 	elevatorStatus currentStatus;
@@ -30,11 +27,11 @@ UINT __stdcall elevatorStatusAsciiThread1(void* args) {
 		terminalOutput.Wait();
 
 		MOVE_CURSOR(50, 44 - 4 * (currentStatus.currentFloor));
-		printf("EV1");
+		printf("EV1 %d", elevator1PassengerNumber);
 		MOVE_CURSOR(50, 44 - 4 * (currentStatus.currentFloor) + 4);
-		printf("   ");
+		printf("     ");
 		MOVE_CURSOR(50, 44 - 4 * (currentStatus.currentFloor) - 4);
-		printf("   ");
+		printf("     ");
 
 		terminalOutput.Signal();
 
@@ -59,11 +56,11 @@ UINT __stdcall elevatorStatusAsciiThread2(void* args) {
 		terminalOutput.Wait();
 
 		MOVE_CURSOR(34, 44 - 4 * (currentStatus.currentFloor));
-		printf("EV2");
+		printf("EV2 %d", elevator2PassengerNumber);
 		MOVE_CURSOR(34, 44 - 4 * (currentStatus.currentFloor) + 4);
-		printf("   ");
+		printf("     ");
 		MOVE_CURSOR(34, 44 - 4 * (currentStatus.currentFloor) - 4);
-		printf("   ");
+		printf("     ");
 
 		terminalOutput.Signal();
 
