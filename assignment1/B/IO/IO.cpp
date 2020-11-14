@@ -11,12 +11,6 @@ UINT passengerCurrFloor = 0;
 UINT passengerDestFloor = 0;
 UINT elevatorNum = 0;
 
-// Terminal output mutex
-CMutex terminalOutput("TerminalOutput", 1);
-
-elevatorStatus currentStatus2;
-elevatorStatus currentStatus1;
-
 UINT __stdcall keyboardThread(void* args) {
 	struct IOData* dataPointer;
 	dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
@@ -49,7 +43,30 @@ UINT __stdcall keyboardThread(void* args) {
 }
 
 UINT __stdcall elevatorStatusIOThread1(void* args) {
+	// Elevator conditions
+	CCondition* Elevator1Floor[10];
+
+	// 0 = down, 1 = up
+	CCondition* Elevator1UpOrDown[2];
+	CCondition* Elevator1Open;
+
+	// C Condition intializiation
+	// Floors
+	for (uint8_t index = 0; index < 10; index++) {
+		Elevator1Floor[index] = new CCondition("Elevator1Floor" + std::to_string(index));
+	}
+
+	// Up or down
+	for (uint8_t index = 0; index < 2; index++) {
+		Elevator1UpOrDown[index] = new CCondition("Elevator1UpOrDown" + std::to_string(index));
+	}
+
+	// Open
+	Elevator1Open = new CCondition("Elevator1Open");
+
+
 	Named* ElevatorMonitor1 = new Named(monitorElevator1, 1);
+	elevatorStatus currentStatus1;
 
 	terminalOutput.Wait();
 	MOVE_CURSOR(0, 5);
@@ -70,6 +87,35 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
 
+		// Update elevator condition flags
+
+		// Clear any existing flags
+		for (uint8_t index = 0; index < 10; index++) {
+			Elevator1Floor[index]->Reset();
+		}
+
+		// Signal current floor
+		Elevator1Floor[currentStatus1.currentFloor]->Signal();
+
+		// Signal up or down
+		if (currentStatus1.headingDirection) {
+			Elevator1UpOrDown[1]->Signal();
+			Elevator1UpOrDown[0]->Reset();
+		}
+		else {
+			Elevator1UpOrDown[currentStatus1.currentFloor]->Reset();
+			Elevator1UpOrDown[0]->Signal();
+			Elevator1UpOrDown[1]->Reset();
+		}
+
+		// Signal door status
+		if (currentStatus1.doorStatus) {
+			Elevator1Open->Signal();
+		}
+		else {
+			Elevator1Open->Reset();
+		}
+
 		if (currentStatus1.currentFloor == 0 && exit_flag) {
 			break;
 		}
@@ -79,7 +125,29 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 }
 
 UINT __stdcall elevatorStatusIOThread2(void* args) {
+	// Elevator conditions
+	CCondition* Elevator2Floor[10];
+	// 0 = down, 1 = up
+	CCondition* Elevator2UpOrDown[2];
+	CCondition* Elevator2Open;
+
+
+	// C Condition intializiation
+// Floors
+	for (uint8_t index = 0; index < 10; index++) {
+		Elevator2Floor[index] = new CCondition("Elevator2Floor" + std::to_string(index));
+	}
+
+	// Up or down
+	for (uint8_t index = 0; index < 2; index++) {
+		Elevator2UpOrDown[index] = new CCondition("Elevator2UpOrDown" + std::to_string(index));
+	}
+
+	// Open
+	Elevator2Open = new CCondition("Elevator2Open");
+
 	Named *ElevatorMonitor2 = new Named(monitorElevator2, 2);
+	elevatorStatus currentStatus2;
 
 	terminalOutput.Wait();
 	MOVE_CURSOR(0, 6);
@@ -99,42 +167,46 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
 
+		// Update elevator condition flags
+
+		// Clear any existing flags
+		for (uint8_t index = 0; index < 10; index++) {
+			Elevator2Floor[index]->Reset();
+		}
+
+		// Signal current floor
+		Elevator2Floor[currentStatus2.currentFloor]->Signal();
+		
+		// Signal current direction
+		if (currentStatus2.headingDirection) {
+			Elevator2UpOrDown[1]->Signal();
+			Elevator2UpOrDown[0]->Reset();
+		}
+		else {
+			Elevator2UpOrDown[currentStatus2.currentFloor]->Reset();
+			Elevator2UpOrDown[0]->Signal();
+			Elevator2UpOrDown[1]->Reset();
+		}
+
+		// Signal door status
+		if (currentStatus2.doorStatus) {
+			Elevator2Open->Signal();
+		}
+		else {
+			Elevator2Open->Reset();
+		}
+
 		if (currentStatus2.currentFloor == 0 && exit_flag) {
 			
 			break;
 		}
-	}
-
-	return 0;
-}
-
-UINT __stdcall passengerStatusThread(void* args) {
-	NamedPassenger* PassengerMonitor = new NamedPassenger("Passenger" + passenger.passengerNumber);
-	passengerStatus currentPassengerStatus;
-
-	for (;;) {
-		PassengerProducer.Wait();
-		PassengerMonitor->get_passenger_status(currentPassengerStatus);
-		PassengerConsumer.Signal();
-
-		// Display on terminal output
-		terminalOutput.Wait();
-		MOVE_CURSOR(0, 6);
-		printf("Elevator 2 on floor %d", currentStatus2.currentFloor);
-		MOVE_CURSOR(0, 1);
-		terminalOutput.Signal();
-
-		if (currentStatus2.currentFloor == 0 && exit_flag) {
-
-			break;
-		}
+		Sleep(1);
 	}
 
 	return 0;
 }
 
 int main() {
-	//CThread passengerThread(passengerThread, ACTIVE, NULL);
 	CThread keyboardThread(keyboardThread, ACTIVE, NULL);
 	CThread elevatorStatusThread1(elevatorStatusIOThread1, ACTIVE, NULL);
 	CThread elevatorStatusThread2(elevatorStatusIOThread2, ACTIVE, NULL);
@@ -154,77 +226,24 @@ int main() {
 	passengerDataPointer = (struct PassengerData*)dpPassengerIO.LinkDataPool();
 
 	for (;;) {
+		new Passenger();
 		PassengerProducer.Wait();		// wait until data consumed before producing more data
-		cout << "IO consuming data...\n" << passengerDataPointer->upOrDown << passengerDataPointer->currentFloor << endl;		// get waiting passenger data
+		cout << "IO consuming Passenger data...\n" << passengerDataPointer->input1 << passengerDataPointer->input2 << endl;
 
 		// send data to dispatcher
 		IOConsumer.Wait();
-		cout << "\rWriting data IO Dispatcher pipeline...";
-		dataPointer->input1 = passengerDataPointer->upOrDown;
-		dataPointer->input2 = passengerDataPointer->currentFloor;
+		cout << "\rWriting Passenger data to IO Dispatcher pipeline...";
+		dataPointer->input1 = passengerDataPointer->input1;
+		dataPointer->input2 = passengerDataPointer->input2;
 
 		// Signal new data is available
 		IOProducer.Signal();
-
 		PassengerConsumer.Signal();
 
-		// wait until EV1 or EV2 is at passenger pickup floor with open doors and available and in order
-		passengerCurrFloor = (UINT)(passengerDataPointer->currentFloor - '0');
-
-		for (;;) {
-			if (currentStatus1.currentFloor == passengerCurrFloor && currentStatus1.doorStatus && currentStatus1.available && !currentStatus1.outOfOrder) {
-				passengerDataPointer->elevatorNumber = '1';
-				break;
-			}
-			else if (currentStatus2.currentFloor == passengerCurrFloor && currentStatus2.doorStatus && currentStatus2.available && !currentStatus2.outOfOrder) {
-				passengerDataPointer->elevatorNumber = '2';
-				break;
-			}
-		}
-
-		// if either elevators arrive at passenger floor, CCondition signal to enter
-		EnterElevator.Signal();
-		cout << "Passenger boarding elevator " << passengerDataPointer->elevatorNumber << "\n";
-
-		//get new passenger floor destination info
-		PassengerProducer.Wait();		// wait until data consumed before producing more data
-		
-		cout << "consuming data...\n" << passengerDataPointer->elevatorNumber << passengerDataPointer->destinationFloor << endl;		// get waiting passenger data
-
-		// send data to dispatcher
-		IOConsumer.Wait();
-		cout << "\rWriting destination floor to pipeline...";
-		dataPointer->input1 = passengerDataPointer->elevatorNumber;
-		dataPointer->input2 = passengerDataPointer->destinationFloor;
-
-		// Signal new data is available
-		IOProducer.Signal();
-
-		PassengerConsumer.Signal();
-
-		// wait until passenger's is at passenger dest floor with open doors
-		passengerDestFloor = (UINT)(passengerDataPointer->destinationFloor - '0');
-
-		for (;;) {
-			if (passengerDataPointer->elevatorNumber == '1') {
-				if (currentStatus1.currentFloor == passengerDestFloor && currentStatus1.doorStatus) {
-					break;
-				}
-			}
-			else {
-				if (currentStatus2.currentFloor == passengerDestFloor && currentStatus2.doorStatus) {
-					break;
-				}
-			}
-		}
-
-		//set CCondition to true
-		ExitElevator.Signal();
-
-		Sleep(2000);
+		Sleep(10000);
+		//Sleep(4 + (rand() % 10));		// create new passenger every 4-10 sec
 	}
 
-	passengerThread.WaitForThread();
 	DispatcherProcess.WaitForProcess();
 	keyboardThread.WaitForThread();
 	elevatorStatusThread1.WaitForThread();

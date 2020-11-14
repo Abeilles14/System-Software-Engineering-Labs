@@ -36,13 +36,14 @@ struct PassengerData {
 	char upOrDown;
 	char destinationFloor;
 	char elevatorNumber;
+	char input1;
+	char input2;
 };
 
 static const UINT elevatorTime = 500;
 
-// Synchronization CCondition 
-CCondition EnterElevator("Enter");   		// create a non-signalled condition
-CCondition ExitElevator("Exit");
+// Mutex Terminal Output
+CMutex terminalOutput("TerminalOutput", 1);
 
 // Semaphores
 // IO - Dispatcher
@@ -58,7 +59,7 @@ CSemaphore MonitorOutput("MonitorOutput", 1);
 
 // Elevator Status
 // IO
-CSemaphore ElevatorIOProducer1("ElevatorIOProducer1", 0, 1);		//TODO: fix initial 0,1 values
+CSemaphore ElevatorIOProducer1("ElevatorIOProducer1", 0, 1);
 CSemaphore ElevatorIOProducer2("ElevatorIOProducer2", 0, 1);
 CSemaphore ElevatorIOConsumer1("ElevatorIOConsumer1", 1, 1);
 CSemaphore ElevatorIOConsumer2("ElevatorIOConsumer2", 1, 1);
@@ -68,6 +69,10 @@ CSemaphore ElevatorDispatcherProducer2("ElevatorDispatcherProducer2", 0, 1);
 CSemaphore ElevatorDispatcherConsumer1("ElevatorDispatcherConsumer1", 1, 1);
 CSemaphore ElevatorDispatcherConsumer2("ElevatorDispatcherConsumer2", 1, 1);
 
+// Elevator Passengers
+CSemaphore Elevator1Passengers("Elevator1Passengers", 1, 4);
+CSemaphore Elevator2Passengers("Elevator2Passengers", 1, 4);
+
 // Datapools
 CDataPool dpIoDispatcher("dpIoDispatcher", sizeof(struct IOData));
 CDataPool dpPassengerIO("dpPassengerIO", sizeof(struct PassengerData));
@@ -75,6 +80,7 @@ CDataPool dpPassengerIO("dpPassengerIO", sizeof(struct PassengerData));
 // monitor names
 std::string monitorElevator1 = "elevator1";
 std::string monitorElevator2 = "elevator2";
+std::string monitorPassenger = "passenger";
 
 // Objects
 class Named {
@@ -145,7 +151,7 @@ public:
 		this->sharedMutex->Signal();
 	}
 
-	void update_elevator_status(passengerStatus updatedStatus) {
+	void update_passenger_status(passengerStatus updatedStatus) {
 		this->sharedMutex->Wait();
 
 		*passengerDataPointer = updatedStatus;
@@ -155,15 +161,42 @@ public:
 };
 
 class Passenger : public ActiveClass {
-public:
+private:
 	UINT currentFloor;
 	UINT destinationFloor;
 	UINT elevatorNumber;		// on which elevator	0 = off, 1 = EV1, 2 = EV2
-	UINT passengerNumber = 0;		// passenger count/number
-	char upOrDown;
+	bool upOrDown;
 
-	Passenger(int number) {
-		this->passengerNumber = number;
+	// Elevator conditions
+	CCondition* Elevator1Floor[10];
+
+	// 0 = down, 1 = up
+	CCondition* Elevator1UpOrDown[2];
+	CCondition* Elevator1Open;
+
+	CCondition* Elevator2Floor[10];
+	// 0 = down, 1 = up
+	CCondition* Elevator2UpOrDown[2];
+	CCondition* Elevator2Open;
+
+public:
+	Passenger() {
+		// C Condition intializiation
+		// Floors
+		for (uint8_t index = 0; index < 10; index++) {
+			Elevator1Floor[index] = new CCondition("Elevator1Floor" + std::to_string(index));
+			Elevator2Floor[index] = new CCondition("Elevator2Floor" + std::to_string(index));
+		}
+
+		// Up or down
+		for (uint8_t index = 0; index < 2; index++) {
+			Elevator1UpOrDown[index] = new CCondition("Elevator1UpOrDown" + std::to_string(index));
+			Elevator2UpOrDown[index] = new CCondition("Elevator2UpOrDown" + std::to_string(index));
+		}
+
+		// Open
+		Elevator1Open = new CCondition("Elevator1Open");
+		Elevator2Open = new CCondition("Elevator2Open");
 
 		srand(time(NULL));
 		// Generate number between 0 and 9
@@ -172,13 +205,12 @@ public:
 
 		// going up
 		if (currentFloor < destinationFloor) {
-			upOrDown = 'u';
+			upOrDown = 1;
 		}
 		// going down
 		else {
-			upOrDown = 'd';
+			upOrDown = 0;
 		}
-		gfdf
 		elevatorNumber = 0;
 	}
 
@@ -189,40 +221,82 @@ public:
 		struct PassengerData* passengerDataPointer;
 		passengerDataPointer = (struct PassengerData*)dpPassengerIO.LinkDataPool();
 
-		while (!exit_flag) {				// currently only lets 1 passenger call at a time...
+		while (1) {				// currently only lets 1 passenger call at a time...
 			//create passengers
 
 			terminalOutput.Wait();
 			MOVE_CURSOR(0, 9);
-			printf("Passenger %d is waiting on floor %d\n", this.passengerNumber, this.currentFloor);
+			printf("Passenger is waiting on floor %d\n", currentFloor);
 			MOVE_CURSOR(0, 1);
 			terminalOutput.Signal();
 
 			// Wait for function to be consumed after valid input as been issued
+			// Issue new data to the IO
 			PassengerConsumer.Wait();
 			MOVE_CURSOR(0, 10);
 			printf("\rWriting floor and direction to Passenger IO pipeline...");
 			MOVE_CURSOR(0, 1);
-			passengerDataPointer->upOrDown = this.upOrDown;				// TODO: Use monitor instead to update??
-			passengerDataPointer->currentFloor = '0' + this.currentFloor;		// send curr floor and direction in dp as char
+
+			if (upOrDown) {
+				passengerDataPointer->input1 = 'u';	
+			}
+			else {
+				passengerDataPointer->input1 = 'd';
+			}
+			
+			passengerDataPointer->input2 = '0' + currentFloor;		// send curr floor and direction in dp as char
 
 			// Signal new data is available
 			PassengerProducer.Signal();
 
-			EnterElevator.Wait();		// timeout condition, wait for IO to send elevator down and open doors to passenger
+			// Wait until either elevator is available
+			for (;;) {
+				if (Elevator1Floor[currentFloor]->Wait(10) == WAIT_TIMEOUT || Elevator1UpOrDown[upOrDown]->Wait(10) == WAIT_TIMEOUT) {}
+				else {
+					elevatorNumber = 1;
+					break;
+				}
+
+
+				if (Elevator2Floor[currentFloor]->Wait(10) == WAIT_TIMEOUT || Elevator2UpOrDown[upOrDown]->Wait(10) == WAIT_TIMEOUT) {}
+				else {
+					elevatorNumber = 2;
+					break;
+				}
+			}
+
+			printf("\rPassenger Boarding Elevator %d", elevatorNumber);
 
 			PassengerConsumer.Wait();
 			MOVE_CURSOR(0, 10);
 			printf("\rWriting destination floor to Passenger IO pipeline...");
 			MOVE_CURSOR(0, 1);
-			passengerDataPointer->destinationFloor = '0' + this.destinationFloor;		// send dest floor in dp
+			passengerDataPointer->input1 = elevatorNumber;				// TODO: Use monitor instead to update??
+			passengerDataPointer->input2 = '0' + destinationFloor;		// send curr floor and direction in dp as char
 			PassengerProducer.Signal();
 
-			ExitElevator.Wait();		// timeout condition: wait for IO to send elevator to floor and open doors
+			// Wait to arrive at correct floor
+			for (;;) {
+				if (elevatorNumber == 1) {
+					if (Elevator1Floor[currentFloor]->Wait(10) == WAIT_TIMEOUT || Elevator1UpOrDown[upOrDown]->Wait(10) == WAIT_TIMEOUT) {}
+					else {
+						break;
+					}
+				}
+				
+				else {
+					if (Elevator2Floor[currentFloor]->Wait(10) == WAIT_TIMEOUT || Elevator2UpOrDown[upOrDown]->Wait(10) == WAIT_TIMEOUT) {}
+					else {
+						break;
+					}
+
+				}
+			}
+			//ExitElevator.Wait();		// timeout condition: wait for IO to send elevator to floor and open doors
 
 			terminalOutput.Wait();
 			MOVE_CURSOR(0, 12);
-			printf("Passenger %d is exiting on floor %d\n", this.passengerNumber, this.destinationFloor);
+			printf("Passenger is exiting on floor %d\n", destinationFloor);
 			MOVE_CURSOR(0, 1);
 			terminalOutput.Signal();
 
@@ -230,11 +304,4 @@ public:
 			return 0;
 		}
 	}
-
-
-
-
-
-
-
 };
