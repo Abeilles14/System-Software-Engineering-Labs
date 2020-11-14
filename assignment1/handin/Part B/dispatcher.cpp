@@ -18,6 +18,8 @@ UINT waitingFloor = 0;
 bool waitingDirection;
 bool elevatorOutOfOrder[2] = { 0 };
 
+bool elevatorRequest[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 UINT currentCommand;
 
 bool exit_flag = false;
@@ -41,17 +43,11 @@ int main() {
 	CThread elevatorDispatcherThread1(elevatorStatusThread1, ACTIVE, NULL);
 	CThread elevatorDispatcherThread2(elevatorStatusThread2, ACTIVE, NULL);
 
-	CProcess IOProcess("IO.exe",	// pathlist to child program executable
-		NORMAL_PRIORITY_CLASS,
-		OWN_WINDOW,
-		ACTIVE
-	);
-
-	CProcess AsciiProcess("assignment1.exe",	// pathlist to child program executable
-		NORMAL_PRIORITY_CLASS,
-		OWN_WINDOW,
-		ACTIVE
-	);
+	//CProcess AsciiProcess("assignment1.exe",	// pathlist to child program executable
+	//	NORMAL_PRIORITY_CLASS,
+	//	OWN_WINDOW,
+	//	ACTIVE
+	//);
 
 	// INSERT LOGIC TO DETERMINE WHICH ELEVATOR TO SEND A COMMAND TO
 
@@ -104,6 +100,9 @@ int main() {
 			else {
 				// Both elevators are not working
 			}
+			ElevatorRequest.Wait();
+			elevatorRequest[waitingFloor] = 1;
+			ElevatorRequest.Signal();
 			currentCommand = noCommand;
 			break;
 
@@ -144,7 +143,9 @@ int main() {
 
 				// Eat command and do nothing
 			}
-
+			ElevatorRequest.Wait();
+			elevatorRequest[waitingFloor] = 1;
+			ElevatorRequest.Signal();
 			currentCommand = noCommand;
 			break;
 
@@ -155,16 +156,14 @@ int main() {
 		}
 	}
 
-	IOProcess.WaitForProcess();
-	printf("IO CLOSED\n");
-	commandThread.WaitForThread();
+	commandThread.WaitForThread(1000);
 	printf("COMAND THREAD CLOSED\n");
-	elevatorThread1.WaitForThread();
+	elevatorThread1.WaitForThread(5000);
 	printf("ELEVATOR 1 CLOSED\n");
-	elevatorThread2.WaitForThread();
+	elevatorThread2.WaitForThread(5000);
 	printf("ELEVATOR 2 CLOSED\n");
-	AsciiProcess.WaitForProcess();
-	printf("ASCII CLOSED\n");
+	//AsciiProcess.WaitForProcess();
+	//printf("ASCII CLOSED\n");
 	return 0;
 }
 
@@ -207,6 +206,7 @@ UINT __stdcall elevatorThread(void* args) {
 			destinationFloor = 0;
 
 			if (currentStatus.currentFloor == 0) {
+
 				ElevatorIOConsumer.Wait();
 				ElevatorDispatcherConsumer.Wait();
 
@@ -217,7 +217,38 @@ UINT __stdcall elevatorThread(void* args) {
 
 				return 0;
 			}
+
+			Sleep(500);
 		}
+
+		ElevatorRequest.Wait();
+		// Stop to let passengers on
+		if (elevatorRequest[currentStatus.currentFloor]) {
+			ElevatorIOConsumer.Wait();
+			ElevatorDispatcherConsumer.Wait();
+
+			currentStatus.doorStatus = 1;
+			currentStatus.available = 1;
+			ElevatorMonitor->update_elevator_status(currentStatus);
+
+			ElevatorDispatcherProducer.Signal();
+			ElevatorIOProducer.Signal();
+			
+			Sleep(elevatorTime);
+			elevatorRequest[currentStatus.currentFloor] = false;
+			currentStatus.doorStatus = 0;
+			//currentStatus.available = 0;
+
+			ElevatorIOConsumer.Wait();
+			ElevatorDispatcherConsumer.Wait();
+
+			currentStatus.doorStatus = 0;
+			ElevatorMonitor->update_elevator_status(currentStatus);
+
+			ElevatorDispatcherProducer.Signal();
+			ElevatorIOProducer.Signal();
+		}
+		ElevatorRequest.Signal();
 
 		// If elevator is out of order
 		if (elevatorOutOfOrder[elevatorNumber-1]) {
@@ -380,7 +411,7 @@ UINT __stdcall commandThread(void* args) {
 		struct IOData* dataPointer;
 		dataPointer = (struct IOData*)dpIoDispatcher.LinkDataPool();
 
-		IOProducer.Wait();
+		IOProducer.Wait();		// wait until data consumed before producing more data
 		cout << "consuming data...\n" << dataPointer->input1 << dataPointer->input2 << endl;
 
 		switch (dataPointer->input1) {
