@@ -41,7 +41,7 @@ struct PassengerData {
 	char input2;
 };
 
-static const UINT elevatorTime = 5000;
+static const UINT elevatorTime = 500;
 
 // Mutex Terminal Output
 CMutex terminalOutput("TerminalOutput", 1);

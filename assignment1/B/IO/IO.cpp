@@ -247,7 +247,7 @@ UINT __stdcall passengerThread(void* args) {
 		srand(time(NULL));
 		// Generate number between 0 and 9
 		// Anytime between 3 and 8 seconds
-		Sleep(rand() % 3000);
+		Sleep(rand() % 6000);
 		passengerPtr = new Passenger();
 		passengerPtr->Resume();
 	}
@@ -255,7 +255,7 @@ UINT __stdcall passengerThread(void* args) {
 }
 
 int main() {
-	//CThread keyboardThread(keyboardThread, ACTIVE, NULL);
+	CThread keyboardThread(keyboardThread, ACTIVE, NULL);
 	CThread elevatorStatusThread1(elevatorStatusIOThread1, ACTIVE, NULL);
 	CThread elevatorStatusThread2(elevatorStatusIOThread2, ACTIVE, NULL);
 	CThread passengerThread1(passengerThread, ACTIVE, NULL);
@@ -279,7 +279,7 @@ int main() {
 	passengerPtr = new Passenger();
 	passengerPtr->Resume();
 
-	while (!exit_flag) {
+	for(;;) {
 
 		PassengerProducer.Wait();		// wait until data consumed before producing more data
 		//cout << "IO consuming Passenger data...\n" << passengerDataPointer->input1 << passengerDataPointer->input2 << endl;
@@ -297,9 +297,11 @@ int main() {
 	}
 
 	DispatcherProcess.WaitForProcess();
-	//keyboardThread.WaitForThread();
-	elevatorStatusThread1.WaitForThread();
-	elevatorStatusThread2.WaitForThread();
+	// DISPATCHER CLOSED
+	keyboardThread.WaitForThread();
+	// KEYBOARD THREAD CLOSED
+	elevatorStatusThread1.WaitForThread(1000);
+	elevatorStatusThread2.WaitForThread(1000);
 
 	return 0;
 }
