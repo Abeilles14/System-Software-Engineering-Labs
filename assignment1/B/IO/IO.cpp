@@ -50,6 +50,8 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 	CCondition* Elevator1UpOrDown[2];
 	CCondition* Elevator1Open;
 
+	CCondition* Elevator1Available;
+
 	// C Condition intializiation
 	// Floors
 	for (uint8_t index = 0; index < 10; index++) {
@@ -63,10 +65,11 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 
 	// Open
 	Elevator1Open = new CCondition("Elevator1Open");
+	Elevator1Available = new CCondition("Elevator1Available");
 
 
 	Named* ElevatorMonitor1 = new Named(monitorElevator1, 1);
-	elevatorStatus currentStatus1;
+	elevatorStatus currentStatus1 = { 0, 0, 0, 0, 0 };
 
 	terminalOutput.Wait();
 	MOVE_CURSOR(0, 5);
@@ -76,6 +79,7 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 
 	for(;;) {
 		ElevatorIOProducer1.Wait();
+		Elevator1Floor[currentStatus1.currentFloor]->Reset();
 		ElevatorMonitor1->get_elevator_status(currentStatus1);
 		ElevatorIOConsumer1.Signal();
 
@@ -88,11 +92,6 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 
 		// Update elevator condition flags
 
-		// Clear any existing flags
-		for (uint8_t index = 0; index < 10; index++) {
-			Elevator1Floor[index]->Reset();
-		}
-
 		// Signal current floor
 		Elevator1Floor[currentStatus1.currentFloor]->Signal();
 
@@ -102,7 +101,6 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 			Elevator1UpOrDown[0]->Reset();
 		}
 		else {
-			Elevator1UpOrDown[currentStatus1.currentFloor]->Reset();
 			Elevator1UpOrDown[0]->Signal();
 			Elevator1UpOrDown[1]->Reset();
 		}
@@ -113,6 +111,14 @@ UINT __stdcall elevatorStatusIOThread1(void* args) {
 		}
 		else {
 			Elevator1Open->Reset();
+		}
+
+		// Available
+		if (currentStatus1.available) {
+			Elevator1Available->Signal();
+		}
+		else {
+			Elevator1Available->Reset();
 		}
 
 		if (currentStatus1.currentFloor == 0 && exit_flag) {
@@ -129,6 +135,7 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 	// 0 = down, 1 = up
 	CCondition* Elevator2UpOrDown[2];
 	CCondition* Elevator2Open;
+	CCondition* Elevator2Available;
 
 
 	// C Condition intializiation
@@ -145,8 +152,11 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 	// Open
 	Elevator2Open = new CCondition("Elevator2Open");
 
+	// Available
+	Elevator2Available = new CCondition("Elevator2Available");
+
 	Named *ElevatorMonitor2 = new Named(monitorElevator2, 2);
-	elevatorStatus currentStatus2;
+	elevatorStatus currentStatus2 = {0, 0, 0, 0, 0};
 
 	terminalOutput.Wait();
 	MOVE_CURSOR(0, 6);
@@ -156,6 +166,7 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 
 	for(;;) {
 		ElevatorIOProducer2.Wait();
+		Elevator2Floor[currentStatus2.currentFloor]->Reset();
 		ElevatorMonitor2->get_elevator_status(currentStatus2);
 		ElevatorIOConsumer2.Signal();
 
@@ -169,9 +180,6 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 		// Update elevator condition flags
 
 		// Clear any existing flags
-		for (uint8_t index = 0; index < 10; index++) {
-			Elevator2Floor[index]->Reset();
-		}
 
 		// Signal current floor
 		Elevator2Floor[currentStatus2.currentFloor]->Signal();
@@ -182,7 +190,6 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 			Elevator2UpOrDown[0]->Reset();
 		}
 		else {
-			Elevator2UpOrDown[currentStatus2.currentFloor]->Reset();
 			Elevator2UpOrDown[0]->Signal();
 			Elevator2UpOrDown[1]->Reset();
 		}
@@ -195,13 +202,30 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 			Elevator2Open->Reset();
 		}
 
+		// Available
+		if (currentStatus2.available) {
+			Elevator2Available->Signal();
+		}
+		else {
+			Elevator2Available->Reset();
+		}
+
 		if (currentStatus2.currentFloor == 0 && exit_flag) {
 			
 			break;
 		}
-		Sleep(1000);
 	}
 
+	return 0;
+}
+
+UINT __stdcall passengerThread(void* args) {
+	for (;;) {
+		Passenger* passengerPtr = NULL;
+		getchar();
+		passengerPtr = new Passenger();
+		passengerPtr->Resume();
+	}
 	return 0;
 }
 
@@ -209,6 +233,7 @@ int main() {
 	//CThread keyboardThread(keyboardThread, ACTIVE, NULL);
 	CThread elevatorStatusThread1(elevatorStatusIOThread1, ACTIVE, NULL);
 	CThread elevatorStatusThread2(elevatorStatusIOThread2, ACTIVE, NULL);
+	CThread passengerThread1(passengerThread, ACTIVE, NULL);
 
 	CProcess DispatcherProcess("dispatcher.exe",	// pathlist to child program executable
 		NORMAL_PRIORITY_CLASS,
@@ -223,7 +248,7 @@ int main() {
 	// Passenger IO datapool
 	struct PassengerData* passengerDataPointer;
 	passengerDataPointer = (struct PassengerData*)dpPassengerIO.LinkDataPool();
-	
+	Sleep(50);
 	Passenger* passengerPtr = NULL;
 
 	passengerPtr = new Passenger();
@@ -232,11 +257,11 @@ int main() {
 	for (;;) {
 
 		PassengerProducer.Wait();		// wait until data consumed before producing more data
-		cout << "IO consuming Passenger data...\n" << passengerDataPointer->input1 << passengerDataPointer->input2 << endl;
+		//cout << "IO consuming Passenger data...\n" << passengerDataPointer->input1 << passengerDataPointer->input2 << endl;
 
 		// send data to dispatcher
 		IOConsumer.Wait();
-		cout << "\rWriting Passenger data to IO Dispatcher pipeline...";
+		//cout << "\rWriting Passenger data to IO Dispatcher pipeline...";
 		dataPointer->input1 = passengerDataPointer->input1;
 		dataPointer->input2 = passengerDataPointer->input2;
 

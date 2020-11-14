@@ -173,11 +173,13 @@ private:
 	// 0 = down, 1 = up
 	CCondition* Elevator1UpOrDown[2];
 	CCondition* Elevator1Open;
+	CCondition* Elevator1Available;
 
 	CCondition* Elevator2Floor[10];
 	// 0 = down, 1 = up
 	CCondition* Elevator2UpOrDown[2];
 	CCondition* Elevator2Open;
+	CCondition* Elevator2Available;
 
 public:
 	Passenger() {
@@ -197,6 +199,11 @@ public:
 		// Open
 		Elevator1Open = new CCondition("Elevator1Open");
 		Elevator2Open = new CCondition("Elevator2Open");
+
+		// Available
+		Elevator1Available = new CCondition("Elevator1Available");
+		Elevator2Available = new CCondition("Elevator2Available");
+
 
 		srand(time(NULL));
 		// Generate number between 0 and 9
@@ -225,17 +232,17 @@ public:
 			//create passengers
 
 			terminalOutput.Wait();
-			MOVE_CURSOR(0, 9);
-			printf("Passenger is waiting on floor %d\n", currentFloor);
+			MOVE_CURSOR(0, 20);
+			printf("Passenger is waiting on floor %d and wants to go to floor %d\n", currentFloor, destinationFloor);
 			MOVE_CURSOR(0, 1);
 			terminalOutput.Signal();
 
 			// Wait for function to be consumed after valid input as been issued
 			// Issue new data to the IO
 			PassengerConsumer.Wait();
-			MOVE_CURSOR(0, 10);
-			printf("\rWriting floor and direction to Passenger IO pipeline...");
-			MOVE_CURSOR(0, 1);
+			//MOVE_CURSOR(0, 10);
+			//printf("\rWriting floor and direction to Passenger IO pipeline...");
+			//MOVE_CURSOR(0, 1);
 
 			if (upOrDown) {
 				passengerDataPointer->input1 = 'u';	
@@ -251,26 +258,35 @@ public:
 
 			// Wait until either elevator is available
 			for (;;) {
-				if (Elevator1Floor[currentFloor]->Wait(10) == WAIT_TIMEOUT || Elevator1UpOrDown[upOrDown]->Wait(10) == WAIT_TIMEOUT) {}
+				if (Elevator1Floor[currentFloor]->Wait(10) == WAIT_TIMEOUT || 
+					(Elevator1UpOrDown[upOrDown]->Wait(10) == WAIT_TIMEOUT && Elevator1Available->Wait(10) == WAIT_TIMEOUT) ||
+					Elevator1Open->Wait(10) == WAIT_TIMEOUT) {}
 				else {
 					elevatorNumber = 1;
 					break;
 				}
 
 
-				if (Elevator2Floor[currentFloor]->Wait(10) == WAIT_TIMEOUT || Elevator2UpOrDown[upOrDown]->Wait(10) == WAIT_TIMEOUT) {}
+				if (Elevator2Floor[currentFloor]->Wait(10) == WAIT_TIMEOUT ||
+					(Elevator2UpOrDown[upOrDown]->Wait(10) == WAIT_TIMEOUT && Elevator2Available->Wait(10) == WAIT_TIMEOUT) ||
+					Elevator2Open->Wait(10) == WAIT_TIMEOUT) {
+				}
 				else {
 					elevatorNumber = 2;
 					break;
 				}
 			}
 
+			terminalOutput.Wait();
+			MOVE_CURSOR(0, 21);
 			printf("\rPassenger Boarding Elevator %d", elevatorNumber);
+			MOVE_CURSOR(0, 1);
+			terminalOutput.Signal();
 
 			PassengerConsumer.Wait();
-			MOVE_CURSOR(0, 10);
-			printf("\rWriting destination floor to Passenger IO pipeline...");
-			MOVE_CURSOR(0, 1);
+			//MOVE_CURSOR(0, 10);
+			//printf("\rWriting destination floor to Passenger IO pipeline...");
+			//MOVE_CURSOR(0, 1);
 			passengerDataPointer->input1 = char('0' + elevatorNumber);
 			passengerDataPointer->input2 = char('0' + destinationFloor);		// send curr floor and direction in dp as char
 			PassengerProducer.Signal();
@@ -278,14 +294,14 @@ public:
 			// Wait to arrive at correct floor
 			for (;;) {
 				if (elevatorNumber == 1) {
-					if (Elevator1Floor[currentFloor]->Wait(10) == WAIT_TIMEOUT || Elevator1UpOrDown[upOrDown]->Wait(10) == WAIT_TIMEOUT) {}
+					if (Elevator1Floor[destinationFloor]->Wait(10) == WAIT_TIMEOUT || Elevator1Open->Wait(10) == WAIT_TIMEOUT) {}
 					else {
 						break;
 					}
 				}
 				
 				else {
-					if (Elevator2Floor[currentFloor]->Wait(10) == WAIT_TIMEOUT || Elevator2UpOrDown[upOrDown]->Wait(10) == WAIT_TIMEOUT) {}
+					if (Elevator2Floor[destinationFloor]->Wait(10) == WAIT_TIMEOUT || Elevator2Open->Wait(10) == WAIT_TIMEOUT) {}
 					else {
 						break;
 					}
@@ -295,7 +311,7 @@ public:
 			//ExitElevator.Wait();		// timeout condition: wait for IO to send elevator to floor and open doors
 
 			terminalOutput.Wait();
-			MOVE_CURSOR(0, 12);
+			MOVE_CURSOR(0, 22);
 			printf("Passenger is exiting on floor %d\n", destinationFloor);
 			MOVE_CURSOR(0, 1);
 			terminalOutput.Signal();
