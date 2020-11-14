@@ -48,4 +48,5 @@
 *.filters
 *.user
 *.opendb
+*.recipe
 
