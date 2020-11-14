@@ -23,11 +23,31 @@ UINT __stdcall keyboardThread(void* args) {
 
 		terminalOutput.Wait();
 		MOVE_CURSOR(0, 0);
-		printf("Input new data into pipeline");	
+		printf("Input new data into pipeline");
 		MOVE_CURSOR(0, 1);
 		terminalOutput.Signal();
 
-		
+		// Waiting for input 1
+		input1 = _getch();
+		cout << input1;
+
+		if (input1 != '1' && input1 != '2' && input1 != 'u' && input1 != 'd' && input1 != 'e' && input1 != '+' && input1 != '-') {
+			cout << "\n\rInvalid 1st input            ";
+			continue;
+		}
+
+		// Waiting for input 2
+		input2 = _getch();
+		cout << input2 << "\n";
+
+		if (!isdigit(input2) && input2 != 'e') {
+			cout << "\rInvalid 2nd input             ";
+			continue;
+		}
+
+		if (input1 == 'e' && input2 == 'e') {		// exit sequence, return elevators to ground, open doors, end sim
+			exit_flag = true;
+		}
 
 		// Wait for function to be consumed after valid input as been issued
 		IOConsumer.Wait();
@@ -219,10 +239,15 @@ UINT __stdcall elevatorStatusIOThread2(void* args) {
 	return 0;
 }
 
+// Generate passengers
 UINT __stdcall passengerThread(void* args) {
-	for (;;) {
-		Passenger* passengerPtr = NULL;
-		getchar();
+	Passenger* passengerPtr = NULL;
+
+	while (!exit_flag) {
+		srand(time(NULL));
+		// Generate number between 0 and 9
+		// Anytime between 3 and 8 seconds
+		Sleep(rand() % 3000);
 		passengerPtr = new Passenger();
 		passengerPtr->Resume();
 	}
@@ -254,7 +279,7 @@ int main() {
 	passengerPtr = new Passenger();
 	passengerPtr->Resume();
 
-	for (;;) {
+	while (!exit_flag) {
 
 		PassengerProducer.Wait();		// wait until data consumed before producing more data
 		//cout << "IO consuming Passenger data...\n" << passengerDataPointer->input1 << passengerDataPointer->input2 << endl;
@@ -269,8 +294,6 @@ int main() {
 		IOProducer.Signal();
 		PassengerConsumer.Signal();
 
-		//getchar();
-		//Sleep(4 + (rand() % 10));		// create new passenger every 4-10 sec
 	}
 
 	DispatcherProcess.WaitForProcess();

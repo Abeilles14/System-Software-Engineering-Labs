@@ -18,6 +18,8 @@ UINT waitingFloor = 0;
 bool waitingDirection;
 bool elevatorOutOfOrder[2] = { 0 };
 
+bool elevatorRequest[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 UINT currentCommand;
 
 bool exit_flag = false;
@@ -98,6 +100,9 @@ int main() {
 			else {
 				// Both elevators are not working
 			}
+			ElevatorRequest.Wait();
+			elevatorRequest[waitingFloor] = 1;
+			ElevatorRequest.Signal();
 			currentCommand = noCommand;
 			break;
 
@@ -138,7 +143,9 @@ int main() {
 
 				// Eat command and do nothing
 			}
-
+			ElevatorRequest.Wait();
+			elevatorRequest[waitingFloor] = 1;
+			ElevatorRequest.Signal();
 			currentCommand = noCommand;
 			break;
 
@@ -210,6 +217,35 @@ UINT __stdcall elevatorThread(void* args) {
 				return 0;
 			}
 		}
+
+		ElevatorRequest.Wait();
+		// Stop to let passengers on
+		if (elevatorRequest[currentStatus.currentFloor]) {
+			ElevatorIOConsumer.Wait();
+			ElevatorDispatcherConsumer.Wait();
+
+			currentStatus.doorStatus = 1;
+			currentStatus.available = 1;
+			ElevatorMonitor->update_elevator_status(currentStatus);
+
+			ElevatorDispatcherProducer.Signal();
+			ElevatorIOProducer.Signal();
+			
+			Sleep(elevatorTime);
+			elevatorRequest[currentStatus.currentFloor] = false;
+			currentStatus.doorStatus = 0;
+			//currentStatus.available = 0;
+
+			ElevatorIOConsumer.Wait();
+			ElevatorDispatcherConsumer.Wait();
+
+			currentStatus.doorStatus = 0;
+			ElevatorMonitor->update_elevator_status(currentStatus);
+
+			ElevatorDispatcherProducer.Signal();
+			ElevatorIOProducer.Signal();
+		}
+		ElevatorRequest.Signal();
 
 		// If elevator is out of order
 		if (elevatorOutOfOrder[elevatorNumber-1]) {
@@ -431,7 +467,7 @@ UINT __stdcall commandThread(void* args) {
 			break;
 
 		default:
-			printf("CRITICAL ERROR, ELEVATOR CRASHING");;
+			printf("CRITICAL ERROR, ELEVATOR CRASHING");
 			break;
 		}
 

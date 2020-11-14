@@ -1,5 +1,6 @@
 #pragma once
 #include "../../rt.h"
+#include <vector>
 
 enum elevatorCommand {
 	noCommand,
@@ -40,7 +41,7 @@ struct PassengerData {
 	char input2;
 };
 
-static const UINT elevatorTime = 500;
+static const UINT elevatorTime = 5000;
 
 // Mutex Terminal Output
 CMutex terminalOutput("TerminalOutput", 1);
@@ -57,6 +58,8 @@ CSemaphore PassengerConsumer("PassengerConsumer", 1);
 // Monitor
 CSemaphore MonitorOutput("MonitorOutput", 1);
 
+CMutex ElevatorRequest("ElevatorRequest");
+
 // Elevator Status
 // IO
 CSemaphore ElevatorIOProducer1("ElevatorIOProducer1", 0, 1);
@@ -70,8 +73,8 @@ CSemaphore ElevatorDispatcherConsumer1("ElevatorDispatcherConsumer1", 1, 1);
 CSemaphore ElevatorDispatcherConsumer2("ElevatorDispatcherConsumer2", 1, 1);
 
 // Elevator Passengers
-CSemaphore Elevator1Passengers("Elevator1Passengers", 1, 4);
-CSemaphore Elevator2Passengers("Elevator2Passengers", 1, 4);
+CSemaphore Elevator1Passengers("Elevator1Passengers", 4, 4);
+CSemaphore Elevator2Passengers("Elevator2Passengers", 4, 4);
 
 uint8_t elevator1PassengerNumber = 0;
 uint8_t elevator2PassengerNumber = 0;
@@ -252,9 +255,6 @@ public:
 			// Wait for function to be consumed after valid input as been issued
 			// Issue new data to the IO
 			PassengerConsumer.Wait();
-			//MOVE_CURSOR(0, 10);
-			//printf("\rWriting floor and direction to Passenger IO pipeline...");
-			//MOVE_CURSOR(0, 1);
 
 			if (upOrDown) {
 				passengerDataPointer->input1 = 'u';	
@@ -274,7 +274,23 @@ public:
 					(Elevator1UpOrDown[upOrDown]->Wait(10) == WAIT_TIMEOUT && Elevator1Available->Wait(10) == WAIT_TIMEOUT) ||
 					Elevator1Open->Wait(10) == WAIT_TIMEOUT) {}
 				else {
-					if (Elevator1Passengers.Wait(10) == WAIT_TIMEOUT) {}
+					if (Elevator1Passengers.Wait(10) == WAIT_TIMEOUT) {
+						// If the elevator is full, re-issue the request for next time it comes
+						PassengerConsumer.Wait();
+
+						if (upOrDown) {
+							passengerDataPointer->input1 = 'u';
+						}
+						else {
+							passengerDataPointer->input1 = 'd';
+						}
+
+						passengerDataPointer->input2 = char('0' + currentFloor);		// send curr floor and direction in dp as char
+
+						// Signal new data is available
+						PassengerProducer.Signal();
+						Sleep(500);
+					}
 
 					else {
 						elevatorNumber = 1;
@@ -290,7 +306,23 @@ public:
 					Elevator2Open->Wait(10) == WAIT_TIMEOUT) {
 				}
 				else {
-					if (Elevator2Passengers.Wait(10) == WAIT_TIMEOUT) {}
+					// If unavailable, re-issue request
+					if (Elevator2Passengers.Wait(10) == WAIT_TIMEOUT) {
+						PassengerConsumer.Wait();
+
+						if (upOrDown) {
+							passengerDataPointer->input1 = 'u';
+						}
+						else {
+							passengerDataPointer->input1 = 'd';
+						}
+
+						passengerDataPointer->input2 = char('0' + currentFloor);		// send curr floor and direction in dp as char
+
+						// Signal new data is available
+						PassengerProducer.Signal();
+						Sleep(10000);
+					}
 
 					else {
 						elevatorNumber = 2;
@@ -342,7 +374,7 @@ public:
 			MOVE_CURSOR(0, 22);
 			printf("Passenger is exiting on floor %d\n", destinationFloor);
 			MOVE_CURSOR(0, 7);
-			printf("TOTAL PASSENGERS: %d\r", totalPassengers);
+			printf("\rTOTAL PASSENGERS: %d ", totalPassengers);
 			MOVE_CURSOR(0, 1);
 			terminalOutput.Signal();
 
