@@ -3,6 +3,7 @@
 #include "user.h"
 
 class Student;
+class Specialization;
 
 using namespace std;
 
@@ -17,8 +18,10 @@ public:
 	
 	// Accessors
 	void DisplayStudentRequests() const;
+	UINT GetRequestSpecializationNumber(UINT userId) const;
 
 	// Mutators
+	bool checkRequirements(Student* thisStudent, Specialization* specialization);
 	bool ApproveRequest(Student* student);
 	bool DenyRequest(UINT userId);
 

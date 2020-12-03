@@ -1,13 +1,11 @@
 #pragma once
 
-
 #include <vector>
 #include <string>
 #include <iostream>
 #include <cstring>
 
 #define UINT unsigned int
-
 
 enum userTypes {
 	typePresident,
@@ -25,6 +23,14 @@ enum courseIdList {
 	NONE
 };
 
+enum specializationIdList {
+	CPEN,
+	ELEC,
+	ENGPHYS,
+	MECH,
+	IGEN
+};
+
 struct courseBase {
 	UINT courseNumber;
 	char courseName[20];
@@ -39,7 +45,13 @@ struct grade {
 struct studentRequest {
 	UINT studentNumber;
 	char studentName[20];
-	char specialization[20];
+	UINT specializationId;
+	char specializationName[20];
+};
+
+struct requirement {
+	std::vector<courseBase> enrolledCourses;
+	UINT averageGrade;
 };
 
 /*

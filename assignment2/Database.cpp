@@ -7,6 +7,7 @@ SystemDatabase::SystemDatabase() {
 void SystemDatabase::Reset() {
 	this->userDB.clear();
 	this->courseDB.clear();
+	this->specializationDB.clear();
 }
 
 bool SystemDatabase::GetUser(const char* cwlUsername, UINT usernameLength, const char* cwlPassword, UINT passwordLength, User* &accessingUser) {
@@ -46,6 +47,14 @@ void SystemDatabase::GetCourseDatabase() {
 	}
 }
 
+// Display course list
+void SystemDatabase::GetSpecializationDatabase() {
+	UINT specializationSize = this->specializationDB.size();
+	for (UINT index = 0; index < specializationSize; index++) {
+		this->specializationDB[index]->DisplaySpecializationInfo();
+	}
+}
+
 // Display student list
 void SystemDatabase::GetStudentDatabase() {
 	UINT userSize = this->userDB.size();
@@ -77,6 +86,17 @@ Course* SystemDatabase::GetCoursePtr(UINT courseId) {
 	return NULL;
 }
 
+Specialization* SystemDatabase::GetSpecializationPtr(UINT specializationId) {
+	// Package specialization info
+	for (UINT index = 0; index < this->specializationDB.size(); index++) {
+		if (specializationDB[index]->GetSpecializationNumber() == specializationId) {
+			return this->specializationDB[index];
+		}
+	}
+	cout << "specializationID not found";
+	return NULL;
+}
+
 User* SystemDatabase::GetUserPtr(UINT userId) {
 	for (UINT index = 0; index < this->userDB.size(); index++) {
 		if (userDB[index]->GetUserId() == userId) {
@@ -87,7 +107,6 @@ User* SystemDatabase::GetUserPtr(UINT userId) {
 	return NULL;
 }
 
-void GetStudentRequests();
 
 // Mutators
 bool SystemDatabase::CreateUser(UINT userId, UINT userType, char* name, UINT nameLength, char* userName, UINT usernameLength, char* password, UINT passwordLength) {
@@ -141,6 +160,22 @@ bool SystemDatabase::RemoveCourse(UINT courseId) {
 		if (courseDB[index]->GetCourseNumber() == courseId) {
 			delete this->courseDB[index];
 			this->courseDB.erase(this->courseDB.begin() + index);
+			return true;
+		}
+	}
+	return false;
+}
+
+bool SystemDatabase::CreateSpecialization(UINT specializationId, char* name, UINT nameLength, UINT averageGrade) {
+	this->specializationDB.push_back(new Specialization(specializationId, name, nameLength, averageGrade));
+	return true;
+}
+
+bool SystemDatabase::RemoveSpecialization(UINT specializationId) {
+	for (UINT index = 0; index < this->specializationDB.size(); index++) {
+		if (specializationDB[index]->GetSpecializationNumber() == specializationId) {
+			delete this->specializationDB[index];
+			this->specializationDB.erase(this->specializationDB.begin() + index);
 			return true;
 		}
 	}

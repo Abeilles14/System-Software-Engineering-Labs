@@ -18,7 +18,6 @@ int main() {
 	char studentName[20];
 	char studentUsername[20];
 	char studentPassword[20];
-	char request[20];
 
 	// Database and accessing user
 	SystemDatabase universityDatabase = databaseSetup();
@@ -27,6 +26,8 @@ int main() {
 	// User and database pointers for modifying values
 	User* userPtr = NULL;
 	Course* coursePtr = NULL;
+	Specialization* specializationPtr = NULL;
+
 
 	bool loggedIn = false;
 
@@ -469,10 +470,17 @@ int main() {
 											break;
 										}
 										studentPtr = (Student*)userPtr;
+										
+										specializationPtr = universityDatabase.GetSpecializationPtr(adminPtr->GetRequestSpecializationNumber(userInput));
+										if (coursePtr == NULL) {
+											break;
+										}
 
 										// approve student request
-										adminPtr->ApproveRequest(studentPtr);
-
+										if (adminPtr->checkRequirements(studentPtr, specializationPtr)) {
+											adminPtr->ApproveRequest(studentPtr);
+										}
+										
 										break;
 									}
 									case 2: {
@@ -570,12 +578,20 @@ int main() {
 									break;
 								}
 								case 2: {
+									// display specialization list
+									universityDatabase.GetSpecializationDatabase();
+
 									// create request to admin
-									cout << "Enter Specialization Name: ";
-									cin >> request;
+									cout << "Enter Specialization Number: ";
+									cin >> userInput;
+
+									specializationPtr = universityDatabase.GetSpecializationPtr(userInput);
+									if (coursePtr == NULL) {
+										break;
+									}
 
 									studentPtr = (Student*)accessingUser;
-									studentPtr->CreateRequest(adminPtr, studentPtr->GetUserId(), studentPtr->GetName(), sizeof(studentPtr->GetName()), request, sizeof(request));
+									studentPtr->CreateRequest(adminPtr, studentPtr->GetUserId(), studentPtr->GetName(), sizeof(studentPtr->GetName()), userInput, specializationPtr->GetSpecializationName(), sizeof(specializationPtr->GetSpecializationName()));
 								}
 							}
 

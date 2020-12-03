@@ -15,6 +15,21 @@ courseSetup courseInitialization[5]{
 	{MATH256, "MATH 256"}
 };
 
+struct specializationSetup {
+	UINT specializationNumber;
+	char specializationName[20];
+	vector<courseBase> enrolledCourses;
+	UINT averageGrade;
+};
+
+specializationSetup specInitialization[5]{
+	{CPEN, "CPEN", {{CPEN211, "CPEN 211"}, {CPEN333, "CPEN 333"}}, 85},
+	{ELEC, "ELEC", {{CPEN211, "CPEN 211"}}, 75},
+	{ENGPHYS, "ENGPHYS", {{MATH256, "MATH 256"}}, 80},
+	{MECH, "MECH", {{MATH256, "MATH 256"}, {CPEN333, "CPEN 333"}}, 75},
+	{IGEN, "IGEN", {{MATH256, "MATH 256"}}, 60}
+};
+
 struct userSetup {
 	UINT userId;
 	char name[20];
@@ -51,6 +66,10 @@ SystemDatabase databaseSetup() {
 		database.CreateCourse(courseInitialization[index].courseNumber, courseInitialization[index].courseName,
 			strlen(courseInitialization[index].courseName));
 
+		database.CreateSpecialization(specInitialization[index].specializationNumber, specInitialization[index].specializationName,
+			strlen(specInitialization[index].specializationName),
+			specInitialization[index].averageGrade);
+
 		database.CreateUser(profInitialization[index].userId, userTypes::typeProfessor, profInitialization[index].name, strlen(profInitialization[index].name),
 			profInitialization[index].userName, strlen(profInitialization[index].userName),
 			profInitialization[index].password, strlen(profInitialization[index].password));
@@ -66,6 +85,24 @@ SystemDatabase databaseSetup() {
 
 	Student* studentPtr = (Student*)database.GetUserPtr(12345678);
 	studentPtr->AddGrade(cpen211Grade);
+
+	// Specialization Requirements
+	Specialization* cpenPtr = database.GetSpecializationPtr(CPEN);
+	cpenPtr->AddEnrolledCourse({ CPEN211, "CPEN 211" });
+	cpenPtr->AddEnrolledCourse({ CPEN333, "CPEN 333" });
+
+	Specialization* elecPtr = database.GetSpecializationPtr(ELEC);
+	elecPtr->AddEnrolledCourse({ CPEN211, "CPEN 211" });
+
+	Specialization* engphysPtr = database.GetSpecializationPtr(ENGPHYS);
+	engphysPtr->AddEnrolledCourse({ MATH256, "MATH 256" });
+
+	Specialization* mechPtr = database.GetSpecializationPtr(MECH);
+	mechPtr->AddEnrolledCourse({ MATH256, "MATH 256" });
+	mechPtr->AddEnrolledCourse({ CPEN333, "CPEN 333" });
+
+	Specialization* igenPtr = database.GetSpecializationPtr(IGEN);
+	igenPtr->AddEnrolledCourse({ MATH256, "MATH 256" });
 
 	// Add administrator and President
 

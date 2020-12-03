@@ -23,6 +23,7 @@ public:
 	void GetSpecialization() const;
 	UINT GetTuitionFees() const;
 	void GetEnrolledCourses() const;
+	const vector<courseBase>* GetEnrolledCoursesList() const;
 	const vector<grade>* GetGradesList() const;
 
 	// Mutators
@@ -31,7 +32,7 @@ public:
 	bool SetSpecialization(char* specialization, UINT specializationLength);
 	bool AddCourse(UINT courseId, const char* courseName, UINT courseNameLength);
 	bool RemoveCourse(UINT courseId);
-	bool CreateRequest(Admin* admin, UINT userId, const char* studentName, UINT nameLength, char* request, UINT requestLegnth);
+	bool CreateRequest(Admin* admin, UINT userId, const char* studentName, UINT nameLength, UINT specializationId, const char* specializationName, UINT specializationNameLength);
 	
 	// Helpers
 	void Reset();

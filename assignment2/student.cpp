@@ -47,6 +47,10 @@ const vector<grade>* Student::GetGradesList() const {
 	return &this->studentGrades;
 }
 
+const vector<courseBase>* Student::GetEnrolledCoursesList() const {
+	return &this->enrolledCourses;
+}
+
 // Mutators
 bool Student::AddGrade(grade thisGrade) {
 	this->studentGrades.push_back(thisGrade);
@@ -82,13 +86,14 @@ bool Student::RemoveCourse(UINT courseId) {
 	return false;
 }
 
-bool Student::CreateRequest(Admin* admin, UINT userId, const char* studentName, UINT nameLength, char* request, UINT requestLength) {
+bool Student::CreateRequest(Admin* admin, UINT userId, const char* studentName, UINT nameLength, UINT specializationId, const char* specializationName, UINT specializationNameLength) {
 	studentRequest newRequest;
 	newRequest.studentNumber = userId;
+	newRequest.specializationId = specializationId;
 	memset(newRequest.studentName, 0, 20);
-	memset(newRequest.specialization, 0, 20);
+	memset(newRequest.specializationName, 0, 20);
 	memcpy(newRequest.studentName, studentName, nameLength);
-	memcpy(newRequest.specialization, request, requestLength);
+	memcpy(newRequest.studentName, specializationName, specializationNameLength);
 
 	for (UINT index = 0; index < admin->requestList.size(); index++) {
 		if (admin->requestList[index].studentNumber == userId) {

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{7976CB0D-7A3D-4CFC-BBCB-84AD1840206F}</ProjectGuid>
-    <RootNamespace>assignment2</RootNamespace>
+    <ProjectGuid>{AE6B1841-A0DF-45C3-B15F-982A79F2CE29}</ProjectGuid>
+    <RootNamespace>Tests</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -70,7 +70,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup />
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
@@ -81,7 +81,7 @@
       <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
@@ -123,29 +123,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\admin.cpp" />
-    <ClCompile Include="..\course.cpp" />
-    <ClCompile Include="..\Database.cpp" />
-    <ClCompile Include="..\main.cpp" />
-    <ClCompile Include="..\president.cpp" />
-    <ClCompile Include="..\professor.cpp" />
-    <ClCompile Include="..\rt.cpp" />
-    <ClCompile Include="..\specialization.cpp" />
-    <ClCompile Include="..\student.cpp" />
-    <ClCompile Include="..\user.cpp" />
+    <ClCompile Include="systemTests.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\admin.h" />
-    <ClInclude Include="..\constants.h" />
-    <ClInclude Include="..\course.h" />
-    <ClInclude Include="..\database.h" />
-    <ClInclude Include="..\databasesetup.h" />
-    <ClInclude Include="..\president.h" />
-    <ClInclude Include="..\professor.h" />
-    <ClInclude Include="..\rt.h" />
-    <ClInclude Include="..\specialization.h" />
-    <ClInclude Include="..\student.h" />
-    <ClInclude Include="..\user.h" />
+    <ClInclude Include="systemTests.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
