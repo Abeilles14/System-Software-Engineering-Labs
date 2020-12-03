@@ -1,4 +1,4 @@
-#include "../../rt.h"
+#include "../rt.h"
 #include <conio.h>
 #include "constants.h"
 #include "database.h"
@@ -12,15 +12,14 @@ void processUserInput(int input) {
 			break;
 		case 1:
 			cout << "Accessing course database\n";
-			GetCourseDatabase();
+			
 			break;
 		case 2:
-			// db get student list...
 			cout << "Accessing student database\n";
+
 			break;
 		case 3:
 			
-
 			break;
 		case 4:
 			
@@ -35,6 +34,10 @@ void setUserInput() {
 }
 
 void setUserType() {
+
+}
+
+bool checkUserPrivileges() {
 
 }
 
