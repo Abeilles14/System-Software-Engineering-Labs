@@ -1,6 +1,7 @@
 #pragma once
 
 #include "user.h"
+#include "admin.h"
 
 using namespace std;
 
@@ -29,8 +30,8 @@ public:
 	bool SetSpecialization(char* specialization, UINT specializationLength);
 	bool AddCourse(UINT courseId, const char* courseName, UINT courseNameLength);
 	bool RemoveCourse(UINT courseId);
+	bool CreateRequest(Admin* admin, UINT userId, const char* studentName, char* specialization);
 	
-
 	// Helpers
 	void Reset();
 

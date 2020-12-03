@@ -81,6 +81,24 @@ bool Student::RemoveCourse(UINT courseId) {
 	return false;
 }
 
+bool Student::CreateRequest(Admin* admin, UINT userId, const char* studentName, char* specialization) {
+	studentRequest newRequest;
+	newRequest.studentNumber = userId;
+	memset(newRequest.studentName, 0, 20);
+	memset(newRequest.specialization, 0, 20);
+
+	for (UINT index = 0; index < admin->requestList.size(); index++) {
+		if (admin->requestList[index].studentNumber == userId) {
+			cout << "Student Can Only Submit One Request At A Time";
+			return false;
+		}
+	}
+
+	admin->requestList.push_back(newRequest);
+	cout << "Specialization Request Submitted to Admin\n";
+	return true;
+}
+
 // Helpers
 
 void Student::Reset() {

@@ -36,6 +36,12 @@ struct grade {
 	UINT grade;
 };
 
+struct studentRequest {
+	UINT studentNumber;
+	char studentName[20];
+	char specialization[20];
+};
+
 /*
 struct grades {
 	char courseId[9];

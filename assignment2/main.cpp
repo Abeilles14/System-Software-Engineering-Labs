@@ -18,7 +18,7 @@ int main() {
 	char studentName[20];
 	char studentUsername[20];
 	char studentPassword[20];
-	//create user pointer
+	char request[20];
 
 	// Database and accessing user
 	SystemDatabase universityDatabase = databaseSetup();
@@ -351,6 +351,8 @@ int main() {
 					Student* studentPtr = NULL;
 					President* presidentPtr = NULL;
 
+					Admin* adminPtr = (Admin*)universityDatabase.GetUserPtr(88888888);		// using a constant single faculty admin for this system
+
 					switch (accessingUser->GetUserType()) {
 						case typePresident: {		// dean and president have same course database privileges
 							cout << "1 : Get Student Information\n"
@@ -425,6 +427,8 @@ int main() {
 									"4 : Delete Student\n"
 									"5 : Back To Main Menu\n" << endl;
 
+							adminPtr = (Admin*)accessingUser;
+
 							// display student list
 							universityDatabase.GetStudentDatabase();
 							cin >> userInput;
@@ -448,27 +452,36 @@ int main() {
 									cout << "Enter Student ID From Student List: ";
 									cin >> userInput;
 
-									//TODO: display requests from student
+									// display requests from student
+									adminPtr->DisplayStudentRequests();
 
-									cout << "MENU OPTIONS\n \
-												1 : Approve Student Request\n \
-												2 : Deny Student Request\n";
+									cout << "\nMENU OPTIONS\n"
+											"1 : Approve Student Request\n"
+											"2 : Deny Student Request\n";
 
 									cin >> userInput;
 
 									switch (userInput) {
 									case 1:
-										cout << "Enter Request ID From Request List: ";
+										cout << "Enter Student ID From Request List: ";
 										cin >> userInput;
 
-										//TODO: approve student request
+										userPtr = universityDatabase.GetUserPtr(userInput);
+										if (userPtr == NULL) {
+											break;
+										}
+										studentPtr = (Student*)userPtr;
+
+										// approve student request
+										adminPtr->ApproveRequest(studentPtr);
 
 										break;
 									case 2:
-										cout << "Enter Request ID From Request List: ";
+										cout << "Enter Student ID From Request List: ";
 										cin >> userInput;
 
-										//TODO: deny student request
+										// deny student request
+										adminPtr->DenyRequest(userInput);
 
 										break;
 									}
@@ -540,11 +553,29 @@ int main() {
 							break;
 						}
 						case typeStudent: {
+							cout << "1 : Get Student User Information\n"
+								"2 : Create Specialization Request\n" << endl;
 
-							// display student information
-							cout << "Displaying Student User Info";
-							studentPtr = (Student*)accessingUser;
-							studentPtr->DisplayStudentInfo();
+							cin >> userInput;
+
+							switch (userInput) {
+								case 1: {
+									// display student information
+									cout << "Displaying Student User Info";
+
+									studentPtr = (Student*)accessingUser;
+									studentPtr->DisplayStudentInfo();
+
+									break;
+								}
+								case 2: {
+									// create request to admin
+									cout << "Enter Specialization Name: ";
+									cin >> request;
+
+									studentPtr->CreateRequest(adminPtr, studentPtr->GetUserId(), studentPtr->GetName(), request);
+								}
+							}
 
 							break;
 						}
