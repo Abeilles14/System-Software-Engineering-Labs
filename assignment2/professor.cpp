@@ -18,7 +18,7 @@ void Professor::DisplayCourseList() const {
 
 // Mutators
 bool Professor::AddCourse(Course* course) {
-	this->courseList.push_back(course);
+	this->courseList.push_back(course);		//TODO: fix bug
 	return true;
 }
 

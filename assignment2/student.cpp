@@ -26,13 +26,16 @@ void Student::GetGrades() const {
 		cout << studentGrades[index].courseName << ": " << studentGrades[index].grade << endl;
 	}
 }
+
 void Student::GetSpecialization() const {
 	cout << this->specialization;
 }
+
 UINT Student::GetTuitionFees() const {
 	cout << this->tuitionFees;
 	return this->tuitionFees;
 }
+
 void Student::GetEnrolledCourses() const {
 	for (UINT index = 0; index < this->enrolledCourses.size(); index++) {
 		cout << enrolledCourses[index].courseNumber << ": " << enrolledCourses[index].courseName << endl;
@@ -53,10 +56,12 @@ bool Student::SetTuition(UINT tuition) {
 	this->tuitionFees = tuition;
 	return true;
 }
+
 bool Student::SetSpecialization(char* specialization, UINT specializationLength) {
 	memcpy(this->specialization, specialization, specializationLength);
 	return  true;
 }
+
 bool Student::AddCourse(UINT courseId, const char* courseName, UINT courseNameLength) {
 	courseBase newCourse;
 	newCourse.courseNumber = courseId;

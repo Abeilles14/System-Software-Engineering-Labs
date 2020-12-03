@@ -86,6 +86,7 @@ User* SystemDatabase::GetUserPtr(UINT userId) {
 	cout << "User id not found";
 	return NULL;
 }
+
 void GetStudentRequests();
 
 // Mutators

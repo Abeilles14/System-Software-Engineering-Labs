@@ -15,6 +15,7 @@ Course::Course(UINT courseNumber, char* courseName, UINT courseNameLength) {
 void Course::DisplayCourseInfo() const {
 	cout << courseNumber << ": " << courseName << std::endl;
 }
+
 UINT Course::GetCourseNumber() const {
 	cout << courseNumber << std::endl;
 	return courseNumber;
