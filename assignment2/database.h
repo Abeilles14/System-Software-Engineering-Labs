@@ -1,45 +1,37 @@
 #pragma once
 
 #include "constants.h"
+#include "student.h"
+#include "professor.h"
+#include "admin.h"
+#include "president.h"
+#include "user.h"
+#include "course.h"
 
 using namespace std;
 
 class SystemDatabase {
 private:
-	vector<student> studentDB;
-	vector<course> courseDB;
-	vector<user> userDB;
+	vector<User*> userDB;
+	vector<Course*> courseDB;
 
 public:
 	SystemDatabase();
-	SystemDatabase(vector<student> studentList, vector<course> courseList);
-	~SystemDatabase();
 
 	// Accessors
-	bool GetUser(char* cwlUsername, UINT usernameLength, char* cwlPassword, UINT passwordLength, UINT userId, UINT userType);
+	bool GetUser(const char* cwlUsername, UINT usernameLength, const char* cwlPassword, UINT passwordLength, User* &accessingUser);
 	void GetCourseDatabase();
 	void GetStudentDatabase();
-	void GetCourseInfo(UINT courseId);
-	void GetStudentInfo(UINT userId);
-	void GetStudentRequests();
+	void GetProfessorDatabase();
+	Course* GetCoursePtr(UINT courseId);
+	User* GetUserPtr(UINT userId);
 
 	// Mutators
-	bool EnrollInCourse(UINT userId, UINT courseId);
-	bool DropCourse(UINT userId, UINT courseId);
-	bool AssignToCourse(UINT userId, UINT courseId);
-	bool RemoveFromCourse(UINT userId, UINT courseId);
+	bool CreateUser(UINT userId, UINT userType, char* name, UINT nameLength, char* userName, UINT usernameLength, char* password, UINT passwordLength);
+	bool RemoveUser(UINT userId);
 
-	bool SuspendStduent(UINT userId);
-	bool UnSuspendStudent(UINT userId);
-	bool ApproveStudentRequest(UINT requestNumber);
-	bool DenyStudentRequest(UINT requestNumber);
-	
-	bool CreateAssessmentProposal(string assignment, UINT courseId);
-	bool RemoveAssessment(UINT assignmentNumber, UINT courseId);
-	bool SelectSpecialization(UINT userId, UINT specializationSelection);
-
-	bool CreateStudent(UINT userId, char* studentName);
-	bool RemoveStudent(UINT userId);
+	bool CreateCourse(UINT courseId, char* courseName, UINT courseNameLength);
+	bool RemoveCourse(UINT courseId);
 
 	// Helpers
 	void Reset();

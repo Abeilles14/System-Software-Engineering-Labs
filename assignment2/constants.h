@@ -4,40 +4,46 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <cstring>
 
 #define UINT unsigned int
 
-using namespace std;
 
-enum userType {
-	typepPresident,
-	typeDean,
+enum userTypes {
+	typePresident,
 	typeAdmin,
 	typeProfessor,
 	typeStudent
 };
 
-enum listOfCourses {
-	ELEC342,
-	ELEC315,
+enum courseIdList {
 	CPEN211,
 	CPEN333,
 	CPEN412,
 	CPEN391,
-	MATH256
+	MATH256,
+	NONE
 };
 
+struct courseBase {
+	UINT courseNumber;
+	char courseName[20];
+};
 
+struct grade {
+	UINT courseNumber;
+	char courseName[9];
+	UINT grade;
+};
+
+/*
 struct grades {
 	char courseId[9];
 	UINT grade;
 };
 
 struct course {
-	UINT courseNumber;
-	char courseName[9];
-	vector<UINT>studentList;
-	vector<string>assignments;
+	
 };
 
 
@@ -49,13 +55,6 @@ struct student {
 	vector<string> courseList;
 };
 
-struct user {
-	char cwlUsername[20];
-	char cwlPassword[20];
-	UINT userId;
-	UINT userType;
-};
-
 vector<course> initialCourseList = { 
 	{CPEN211, "CPEN 211"},
 	{CPEN333, "CPEN 333"},
@@ -63,3 +62,4 @@ vector<course> initialCourseList = {
 	{CPEN412, "CPEN 412"},
 	{MATH256, "ELEC 342"}
 }
+*/

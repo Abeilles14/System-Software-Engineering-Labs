@@ -4,40 +4,34 @@ SystemDatabase::SystemDatabase() {
 	this->Reset();
 }
 
-SystemDatabase::SystemDatabase(vector<student> studentList, vector<course> courseList) {
-	this->Reset();
-	this->studentDB = studentList;
-	this->courseDB = courseList;
-}
-
 void SystemDatabase::Reset() {
-	this->studentDB.clear();
+	this->userDB.clear();
 	this->courseDB.clear();
 }
 
-bool SystemDatabase::GetUser(char* cwlUsername, UINT usernameLength, char* cwlPassword, UINT passwordLength, UINT userId, UINT userType) {
+bool SystemDatabase::GetUser(const char* cwlUsername, UINT usernameLength, const char* cwlPassword, UINT passwordLength, User* &accessingUser) {
 	UINT userSize = this->userDB.size();
 	for (UINT index = 0; index < userSize; index++) {
-		if (usernameLength != strlen(this->userDB[index].cwlUsername)) {
+		if (usernameLength != strlen(this->userDB[index]->GetCwlUsername())) {
 			continue;
 		}
 
-		if (memcmp(cwlUsername, this->userDB[index].cwlUsername, usernameLength) != 0) {
+		if (memcmp(cwlUsername, this->userDB[index]->GetCwlUsername(), usernameLength) != 0) {
 			continue;
 		}
 
-		if (passwordLength != strlen(this->userDB[index].cwlPassword)) {
+		if (passwordLength != strlen(this->userDB[index]->GetCwlPassword())) {
 			cout << "Incorrect password\n";
 			continue;
 		}
 
-		if (memcmp(cwlUsername, this->userDB[index].cwlPassword, passwordLength) != 0) {
+		if (memcmp(cwlPassword, this->userDB[index]->GetCwlPassword(), passwordLength) != 0) {
 			cout << "Incorrect password\n";
 			break;
 		}
 		// User has been found
-		userId = this->userDB[index].userId;
-		userType = this->userDB[index].userType;
+		accessingUser = this->userDB[index];
+
 		return true;
 	}
 	cout << "Unable to login\n";
@@ -48,65 +42,101 @@ bool SystemDatabase::GetUser(char* cwlUsername, UINT usernameLength, char* cwlPa
 void SystemDatabase::GetCourseDatabase() {
 	UINT courseSize = this->courseDB.size();
 	for (UINT index = 0; index < courseSize; index++) {
-		cout << index << ": " << this->courseDB[index].courseName << std::endl;
+		this->courseDB[index]->DisplayCourseInfo();
 	}
 }
 
 // Display student list
 void SystemDatabase::GetStudentDatabase() {
-	UINT studentSize = this->studentDB.size();
-	for (UINT index = 0; index < studentSize; index++) {
-		cout << this->studentDB[index].name << std::endl;
+	UINT userSize = this->userDB.size();
+	for (UINT index = 0; index < userSize; index++) {
+		if (this->userDB[index]->GetUserType() == userTypes::typeStudent) {
+			cout << this->userDB[index]->GetUserId() << ": " << this->userDB[index]->GetName() << endl;
+		}
 	}
 }
 
-void SystemDatabase::GetCourseInfo(UINT courseId) {
+// Display professor list
+void SystemDatabase::GetProfessorDatabase() {
+	UINT userSize = this->userDB.size();
+	for (UINT index = 0; index < userSize; index++) {
+		if (this->userDB[index]->GetUserType() == userTypes::typeProfessor) {
+			cout << this->userDB[index]->GetUserId() << ": " << this->userDB[index]->GetName() << endl;
+		}
+	}
+}
+
+Course* SystemDatabase::GetCoursePtr(UINT courseId) {
 	// Package course info
-	if (courseId < this->courseDB.size()) {
-		return;
+	for (UINT index = 0; index < this->courseDB.size(); index++) {
+		if (courseDB[index]->GetCourseNumber() == courseId) {
+			return this->courseDB[index];
+		}
 	}
-
-	cout << this->courseDB[courseId].courseName;
-	cout << "List of students enrolled by ID number:\n";
-	for (UINT index = 0; index < this->courseDB[courseId].studentList.size(); index++) {
-		cout << this->courseDB[courseId].studentList[index];
-	}
-
-	cout << "List of assignments:\n";
-	for (UINT index = 0; index < this->courseDB[courseId].assignments.size(); index++) {
-		cout << this->courseDB[courseId].assignments[index];
-	}
+	cout << "Course ID not found";
+	return NULL;
 }
 
-void SystemDatabase::GetStudentInfo(UINT userId) {
-	if (userId < this->studentDB.size()) {
-		return;
+User* SystemDatabase::GetUserPtr(UINT userId) {
+	for (UINT index = 0; index < this->userDB.size(); index++) {
+		if (userDB[index]->GetUserId() == userId) {
+			return this->userDB[index];
+		}
 	}
-	cout << this->studentDB[userId].name << std::endl;
-	cout << this->studentDB[userId].specialization << std::endl;
-	cout << "Courses:\n";
-	for (UINT index = 0; index < this->studentDB[userId].courseList.size(); index++) {
-		cout << this->studentDB[userId].courseList[index] << std::endl;
-	}
-	cout << "Grades:\n";
-	for (UINT index = 0; index < this->studentDB[userId].gradesList.size(); index++) {
-		cout << this->studentDB[userId].gradesList[index].courseId << ": " << this->studentDB[userId].gradesList[index].grade << std::endl;
-	}
+	cout << "User id not found";
+	return NULL;
 }
 void GetStudentRequests();
 
-bool SystemDatabase::EnrollInCourse(UINT userId, UINT courseId) {
-	if (courseId < this->courseDB.size()) {
-		return false;
+// Mutators
+bool SystemDatabase::CreateUser(UINT userId, UINT userType, char* name, UINT nameLength, char* userName, UINT usernameLength, char* password, UINT passwordLength) {
+	switch (userType) {
+		case userTypes::typeStudent:
+			this->userDB.push_back(new Student(userId, name, nameLength, userName, usernameLength, password, passwordLength));
+			break;
+
+		case userTypes::typeProfessor:
+			this->userDB.push_back(new Professor(userId, name, nameLength, userName, usernameLength, password, passwordLength));
+			break;
+
+		case userTypes::typeAdmin:
+			this->userDB.push_back(new Admin(userId, name, nameLength, userName, usernameLength, password, passwordLength));
+			break;
+
+		case userTypes::typePresident:
+			this->userDB.push_back(new President(userId, name, nameLength, userName, usernameLength, password, passwordLength));
+			break;
+
+		default:
+			cout << "Error: Unknown user type" << endl;
+			return false;
 	}
+	return true;
+}
 
-	if (userId < this->studentDB.size()) {
-		return false;
+bool SystemDatabase::RemoveUser(UINT userId) {
+	for (UINT index = 0; index < this->userDB.size(); index++) {
+		if (userDB[index]->GetUserId() == userId) {
+			delete this->userDB[index];
+			this->userDB.erase(this->userDB.begin() + index);
+			return true;
+		}
 	}
+	return false;
+}
 
-	for (UINT index = 0; index < this->courseDB[courseId].studentList.size(); index++) {
-		if ()
+bool SystemDatabase::CreateCourse(UINT courseId, char* courseName, UINT courseNameLength) {
+	this->courseDB.push_back(new Course(courseId, courseName, courseNameLength));
+	return true;
+}
+
+bool SystemDatabase::RemoveCourse(UINT courseId) {
+	for (UINT index = 0; index < this->courseDB.size(); index++) {
+		if (courseDB[index]->GetCourseNumber() == courseId) {
+			delete this->courseDB[index];
+			this->courseDB.erase(this->courseDB.begin() + index);
+			return true;
+		}
 	}
-
-
+	return false;
 }
