@@ -72,273 +72,271 @@ int main() {
 
 					switch (accessingUser->GetUserType()) {
 
-					case typePresident: {
-						cout << "1 : Get Course Information\n"
-							"2 : Back To Main Menu\n" << endl;
-						cin >> userInput;
-
-						switch (userInput) {
-						case 1:
-							cout << "Enter Course ID From Course List: ";
+						case typePresident: {
+							cout << "1 : Get Course Information\n"
+								"2 : Back To Main Menu\n" << endl;
 							cin >> userInput;
 
-							// display course Information
-							cout << "Displaying Course " << userInput << "Information";
-							coursePtr = universityDatabase.GetCoursePtr(userInput);
-							if (coursePtr == NULL) {
+							switch (userInput) {
+							case 1: {
+								cout << "Enter Course ID From Course List: ";
+								cin >> userInput;
+
+								// display course Information
+								cout << "Displaying Course " << userInput << "Information";
+								coursePtr = universityDatabase.GetCoursePtr(userInput);
+								if (coursePtr == NULL) {
+									break;
+								}
+								coursePtr->DisplayCourseInfo();
+
 								break;
 							}
-							coursePtr->DisplayCourseInfo();
-
-							break;
-						default:
-							// do nothing, back to main menu
-							break;
-						}
-						break;
-					}
-					case typeAdmin: {
-						cout << "1 : Get Gourse Information\n"
-							"2 : Assign Professor To Course\n"
-							"3 : Remove Professor From Course\n"
-							"4 : Back To Main Menu\n" << endl;
-						cin >> userInput;
-
-						switch (userInput) {
-						case 1: {
-							cout << "Enter Course ID From Course List: ";
-							cin >> userInput;
-
-							// display course Information
-							cout << "Displaying Course " << userInput << "Information";
-							coursePtr = universityDatabase.GetCoursePtr(userInput);
-							if (coursePtr == NULL) {
+							default:
+								// do nothing, back to main menu
 								break;
 							}
-							coursePtr->DisplayCourseInfo();
-
 							break;
 						}
-						case 2: {
-							cout << "Enter Course ID From Course List: ";
+						case typeAdmin: {
+							cout << "1 : Get Gourse Information\n"
+								"2 : Assign Professor To Course\n"
+								"3 : Remove Professor From Course\n"
+								"4 : Back To Main Menu\n" << endl;
 							cin >> userInput;
-							coursePtr = universityDatabase.GetCoursePtr(userInput);
-							if (coursePtr == NULL) {
+
+							switch (userInput) {
+							case 1: {
+								cout << "Enter Course ID From Course List: ";
+								cin >> userInput;
+
+								// display course Information
+								cout << "Displaying Course " << userInput << "Information";
+								coursePtr = universityDatabase.GetCoursePtr(userInput);
+								if (coursePtr == NULL) {
+									break;
+								}
+								coursePtr->DisplayCourseInfo();
+
 								break;
 							}
-							// display list of professors
-							universityDatabase.GetProfessorDatabase();
+							case 2: {
+								cout << "Enter Course ID From Course List: ";
+								cin >> userInput;
+								coursePtr = universityDatabase.GetCoursePtr(userInput);
+								if (coursePtr == NULL) {
+									break;
+								}
+								// display list of professors
+								universityDatabase.GetProfessorDatabase();
 
-							cout << "Enter Professor ID From Professor List: ";
-							cin >> userInput;
+								cout << "Enter Professor ID From Professor List: ";
+								cin >> userInput;
 
-							// update prof to assign course to prof
-							userPtr = universityDatabase.GetUserPtr(userInput);
-							if (userPtr == NULL) {
+								// update prof to assign course to prof
+								userPtr = universityDatabase.GetUserPtr(userInput);
+								if (userPtr == NULL) {
+									break;
+								}
+								professorPtr = (Professor*)userPtr;
+								professorPtr->AddCourse(coursePtr);
+
 								break;
 							}
-							professorPtr = (Professor*)userPtr;
-							professorPtr->AddCourse(coursePtr);		//TODO: fix bug
-							cout << "Professor Added to Course";
+							case 3: {
+								// display list of professors
+								universityDatabase.GetProfessorDatabase();
 
-							break;
-						}
-						case 3: {
-							// display list of professors
-							universityDatabase.GetProfessorDatabase();
+								cout << "Enter Professor ID From Professor List: ";
+								cin >> userInput;
 
-							cout << "Enter Professor ID From Professor List: ";
-							cin >> userInput;
+								// update prof to assign course to prof
+								userPtr = universityDatabase.GetUserPtr(userInput);
+								if (userPtr == NULL) {
+									break;
+								}
+								professorPtr = (Professor*)userPtr;
 
-							// update prof to assign course to prof
-							userPtr = universityDatabase.GetUserPtr(userInput);
-							if (userPtr == NULL) {
-								break;
-							}
-							professorPtr = (Professor*)userPtr;
+								cout << "Enter Course ID From Course List: ";
+								cin >> userInput;
 
-							cout << "Enter Course ID From Course List: ";
-							cin >> userInput;
-
-							// update prof to unassign course to prof
-							professorPtr->RemoveCourse(userInput);		//TODO: fix bug
-							cout << "Professor Unassigned To Course";
+								// update prof to unassign course to prof
+								professorPtr->RemoveCourse(userInput);
 						
+								break;
+							}
+							default:
+								// do nothing, back to main menu
+								break;
+							}
+							break;
+						}
+
+						case typeProfessor: {
+							cout << "1 : Get Gourse Information\n"
+								"2 : View Course Assessments\n"
+								"3 : Create Assessment Proposal\n"
+								"4 : Delete Assessment Proposal\n"
+								"5 : Back To Main Menu\n" << endl;
+							cin >> userInput;
+
+							switch (userInput) {
+							case 1: {
+								cout << "Enter Course ID From Course List: ";
+								cin >> userInput;
+
+								// display course Information
+								coursePtr = universityDatabase.GetCoursePtr(userInput);
+								if (coursePtr == NULL) {
+									break;
+								}
+
+								cout << "Displaying Course " << userInput << " Information";
+								coursePtr->DisplayCourseInfo();
+
+								break;
+							}
+							case 2: {
+								cout << "Enter Course ID From Course List: ";
+								cin >> userInput;
+
+								// display list course assessments
+								coursePtr = universityDatabase.GetCoursePtr(userInput);
+								if (coursePtr == NULL) {
+									break;
+								}
+								cout << "Displaying Course " << userInput << " Assignments";
+								coursePtr->DisplayAssignments();
+
+								break;
+							}
+							case 3: {
+								cout << "Enter Course ID From Course List: ";
+								cin >> userInput;
+
+								cout << "Enter Assignment Name and/or Description: ";
+								cin >> newAssignment;
+
+								// add assignment to course assignment list
+								coursePtr = universityDatabase.GetCoursePtr(userInput);
+								if (coursePtr == NULL) {
+									break;
+								}
+								coursePtr->AddAssignment(newAssignment);
+
+								break;
+							}
+							case 4: {
+								cout << "Enter Course ID From Course List: ";
+								cin >> userInput;
+
+								// display list course assessments
+								coursePtr = universityDatabase.GetCoursePtr(userInput);
+								if (coursePtr == NULL) {
+									break;
+								}
+								coursePtr->DisplayAssignments();
+
+								cout << "Enter Assignment Name From Assignments List: ";
+								cin >> newAssignment;
+
+								// remove assignment from course assignment list
+								coursePtr->RemoveAssignment(newAssignment);
+
+								break;
+							}
+							default:
+								// do nothing, back to main menu
+								break;
+							}
+							break;
+						}
+
+						case typeStudent: {
+							// For use with student functions
+							Student* studentPtr = (Student*)accessingUser;
+
+							cout << "1 : Get Gourse Information\n"
+								"2 : Enroll In Course\n"
+								"3 : Drop Course\n"
+								"4 : View Course Assessments\n"
+								"5 : Back To Main Menu\n" << endl;
+							cin >> userInput;
+
+							switch (userInput) {
+							case 1: {
+								cout << "Enter Course ID From Course List: ";
+								cin >> userInput;
+
+								cout << "Displaying Course " << userInput << " Information";
+								coursePtr = universityDatabase.GetCoursePtr(userInput);
+								if (coursePtr == NULL) {
+									break;
+								}
+								coursePtr->DisplayCourseInfo();
+
+								break;
+							}
+							case 2: {
+								cout << "Enter Course ID From Course List: ";
+								cin >> userInput;
+
+								coursePtr = universityDatabase.GetCoursePtr(userInput);
+								if (coursePtr == NULL) {
+									break;
+								}
+								if (!coursePtr->AddStudent(studentPtr)) {
+									cout << "Student does not meet pre-requisites for course" << endl;
+									break;
+								}
+								studentPtr->AddCourse(coursePtr->GetCourseNumber(), coursePtr->GetCourseName(), strlen(coursePtr->GetCourseName()));
+								cout << "Student enrolled in course: " << coursePtr->GetCourseName() << endl;
+
+								break;
+							}
+							case 3: {
+								cout << "Enter Course ID From Course List: ";
+								cin >> userInput;
+
+								coursePtr = universityDatabase.GetCoursePtr(userInput);
+								if (coursePtr == NULL) {
+									break;
+								}
+
+								if (!coursePtr->RemoveStudent(studentPtr->GetUserId())) {
+									cout << "User is not enrolled in course";
+									break;
+								}
+
+								studentPtr->RemoveCourse(userInput);
+								cout << "Student removed from course " << coursePtr->GetCourseName() << endl;
+
+								break;
+							}
+							case 4: {
+								cout << "Enter Course ID From Course List: ";
+								cin >> userInput;
+
+								// display course assigments
+								cout << "Displaying Course " << userInput << " Assignments";
+								coursePtr = universityDatabase.GetCoursePtr(userInput);
+								if (coursePtr == NULL) {
+									break;
+								}
+								coursePtr->DisplayAssignments();
+
+								break;
+							}
+							default:
+								// do nothing, back to main menu
+								break;
+							}
+
 							break;
 						}
 						default:
-							// do nothing, back to main menu
+							cout << "Error in System Database\n";
 							break;
-						}
-						break;
-					}
-
-					case typeProfessor: {
-						cout << "1 : Get Gourse Information\n"
-							"2 : View Course Assessments\n"
-							"3 : Create Assessment Proposal\n"
-							"4 : Delete Assessment Proposal\n"
-							"5 : Back To Main Menu\n" << endl;
-						cin >> userInput;
-
-						switch (userInput) {
-						case 1: {
-							cout << "Enter Course ID From Course List: ";
-							cin >> userInput;
-
-							// display course Information
-							coursePtr = universityDatabase.GetCoursePtr(userInput);
-							if (coursePtr == NULL) {
-								break;
-							}
-							coursePtr->DisplayCourseInfo();
-							cout << "Displaying Course " << userInput << " Information";
-
-							break;
-						}
-						case 2: {
-							cout << "Enter Course ID From Course List: ";
-							cin >> userInput;
-
-							// display list course assessments
-							coursePtr = universityDatabase.GetCoursePtr(userInput);
-							if (coursePtr == NULL) {
-								break;
-							}
-							cout << "Displaying Course " << userInput << " Assignments";
-							coursePtr->DisplayAssignments();
-
-							break;
-						}
-						case 3: {
-							cout << "Enter Course ID From Course List: ";
-							cin >> userInput;
-
-							cout << "Enter Assignment Name and/or Description: ";
-							cin >> newAssignment;
-
-							// add assignment to course assignment list
-							coursePtr = universityDatabase.GetCoursePtr(userInput);
-							if (coursePtr == NULL) {
-								break;
-							}
-							coursePtr->AddAssignment(newAssignment);
-							cout << "Assignment " << newAssignment << " Created";
-
-							break;
-						}
-						case 4: {
-							cout << "Enter Course ID From Course List: ";
-							cin >> userInput;
-
-							// display list course assessments
-							coursePtr = universityDatabase.GetCoursePtr(userInput);
-							if (coursePtr == NULL) {
-								break;
-							}
-							coursePtr->DisplayAssignments();
-
-							cout << "Enter Assignment Name From Assignments List: ";
-							cin >> newAssignment;
-
-							// remove assignment from course assignment list
-							coursePtr->RemoveAssignment(newAssignment);
-							cout << "Assignment " << newAssignment << " Deleted";
-
-							break;
-						}
-						default:
-							// do nothing, back to main menu
-							break;
-						}
-						break;
-					}
-
-					case typeStudent: {
-						// For use with student functions
-						Student* studentPtr = (Student*)accessingUser;
-
-						cout << "1 : Get Gourse Information\n"
-							"2 : Enroll In Course\n"
-							"3 : Drop Course\n"
-							"4 : View Course Assessments\n"
-							"5 : Back To Main Menu\n" << endl;
-						cin >> userInput;
-
-						switch (userInput) {
-						case 1: {
-							cout << "Enter Course ID From Course List: ";
-							cin >> userInput;
-
-							cout << "Displaying Course " << userInput << " Information";
-							coursePtr = universityDatabase.GetCoursePtr(userInput);
-							if (coursePtr == NULL) {
-								break;
-							}
-							coursePtr->DisplayCourseInfo();
-
-							break;
-						}
-						case 2: {
-							cout << "Enter Course ID From Course List: ";
-							cin >> userInput;
-
-							coursePtr = universityDatabase.GetCoursePtr(userInput);
-							if (coursePtr == NULL) {
-								break;
-							}
-							if (!coursePtr->AddStudent(studentPtr)) {
-								cout << "Student does not meet pre-requisites for course" << endl;
-								break;
-							}
-							studentPtr->AddCourse(coursePtr->GetCourseNumber(), coursePtr->GetCourseName(), strlen(coursePtr->GetCourseName()));
-							cout << "Student enrolled in course: " << coursePtr->GetCourseName() << endl;
-
-							break;
-						}
-						case 3: {
-							cout << "Enter Course ID From Course List: ";
-							cin >> userInput;
-
-							coursePtr = universityDatabase.GetCoursePtr(userInput);
-							if (coursePtr == NULL) {
-								break;
-							}
-
-							if (!coursePtr->RemoveStudent(studentPtr->GetUserId())) {
-								cout << "User is not enrolled in course";
-								break;
-							}
-
-							studentPtr->RemoveCourse(userInput);
-							cout << "Student removed from course " << coursePtr->GetCourseName() << endl;
-
-							break;
-						}
-						case 4: {
-							cout << "Enter Course ID From Course List: ";
-							cin >> userInput;
-
-							// display course assigments
-							cout << "Displaying Course " << userInput << " Information";
-							coursePtr = universityDatabase.GetCoursePtr(userInput);
-							if (coursePtr == NULL) {
-								break;
-							}
-							coursePtr->DisplayAssignments();
-
-							break;
-						}
-						default:
-							// do nothing, back to main menu
-							break;
-						}
-
-						break;
-					}
-					default:
-						cout << "Error in System Database\n";
-						break;
 					}
 
 					break;
@@ -373,6 +371,7 @@ int main() {
 								cin >> userInput;
 
 								// display student information
+								cout << "Sisplaying Student Info";
 								userPtr = universityDatabase.GetUserPtr(userInput);
 								if (userPtr == NULL) {
 									break;
@@ -422,7 +421,7 @@ int main() {
 
 						case typeAdmin: {
 							cout << "1 : Get Student Information\n"
-									"2 : Get Student Requests\n"
+									"2 : Display Student Requests\n"
 									"3 : Create Student\n"
 									"4 : Delete Student\n"
 									"5 : Back To Main Menu\n" << endl;
@@ -439,6 +438,7 @@ int main() {
 									cin >> userInput;
 
 									// display student information
+									cout << "Sisplaying Student Info";
 									userPtr = universityDatabase.GetUserPtr(userInput);
 									if (userPtr == NULL) {
 										break;
@@ -448,21 +448,19 @@ int main() {
 
 									break;
 								}
-								case 2:
-									cout << "Enter Student ID From Student List: ";
-									cin >> userInput;
-
+								case 2: {
 									// display requests from student
 									adminPtr->DisplayStudentRequests();
 
 									cout << "\nMENU OPTIONS\n"
 											"1 : Approve Student Request\n"
-											"2 : Deny Student Request\n";
+											"2 : Deny Student Request\n"
+											"3 : Back To Main Menu\n" << endl;
 
 									cin >> userInput;
 
 									switch (userInput) {
-									case 1:
+									case 1: {
 										cout << "Enter Student ID From Request List: ";
 										cin >> userInput;
 
@@ -476,7 +474,8 @@ int main() {
 										adminPtr->ApproveRequest(studentPtr);
 
 										break;
-									case 2:
+									}
+									case 2: {
 										cout << "Enter Student ID From Request List: ";
 										cin >> userInput;
 
@@ -485,8 +484,13 @@ int main() {
 
 										break;
 									}
+									default:
+										// do nothing, back to main menu
+										break;
+									}
 
 									break;
+								}
 								case 3: {
 									cout << "Enter New Student ID: ";
 									cin >> studentNumber;
@@ -499,7 +503,6 @@ int main() {
 
 									// create new user
 									universityDatabase.CreateUser(studentNumber, typeStudent, studentName, sizeof(studentName), studentUsername, sizeof(studentUsername), studentPassword, sizeof(studentPassword));
-									cout << "New Student Enrolled (Created)\n";
 
 									break;
 								}
@@ -507,10 +510,8 @@ int main() {
 									cout << "Enter Student ID From Student List: ";
 									cin >> userInput;
 
-									//TODO: delete student
+									// delete student
 									universityDatabase.RemoveUser(userInput);
-									cout << "Student Graduated (Removed)\n";
-
 									break;
 								}
 								default:
@@ -573,7 +574,8 @@ int main() {
 									cout << "Enter Specialization Name: ";
 									cin >> request;
 
-									studentPtr->CreateRequest(adminPtr, studentPtr->GetUserId(), studentPtr->GetName(), request);
+									studentPtr = (Student*)accessingUser;
+									studentPtr->CreateRequest(adminPtr, studentPtr->GetUserId(), studentPtr->GetName(), sizeof(studentPtr->GetName()), request, sizeof(request));
 								}
 							}
 

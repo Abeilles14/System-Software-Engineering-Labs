@@ -82,11 +82,13 @@ bool Student::RemoveCourse(UINT courseId) {
 	return false;
 }
 
-bool Student::CreateRequest(Admin* admin, UINT userId, const char* studentName, char* specialization) {
+bool Student::CreateRequest(Admin* admin, UINT userId, const char* studentName, UINT nameLength, char* request, UINT requestLength) {
 	studentRequest newRequest;
 	newRequest.studentNumber = userId;
 	memset(newRequest.studentName, 0, 20);
 	memset(newRequest.specialization, 0, 20);
+	memcpy(newRequest.studentName, studentName, nameLength);
+	memcpy(newRequest.specialization, request, requestLength);
 
 	for (UINT index = 0; index < admin->requestList.size(); index++) {
 		if (admin->requestList[index].studentNumber == userId) {

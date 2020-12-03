@@ -66,6 +66,7 @@ bool Course::RemoveStudent(UINT studentId) {
 }
 bool Course::AddAssignment(string assignment) {
 	this->assignments.push_back(assignment);
+	cout << "Assignment " << assignment << " Created";
 	return true;
 }
 
@@ -73,9 +74,11 @@ bool Course::RemoveAssignment(string assignment) {
 	for (UINT index = 0; index < this->assignments.size(); index++) {
 		if (assignment == assignments[index]) {
 			assignments.erase(assignments.begin() + index);
+			cout << "Assignment " << assignment << " Deleted";
 			return true;
 		}
 	}
+	cout << "Error Deleting Assignment";
 	return false;
 }
 

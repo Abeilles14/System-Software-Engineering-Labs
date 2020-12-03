@@ -19,6 +19,7 @@ void Professor::DisplayCourseList() const {
 // Mutators
 bool Professor::AddCourse(Course* course) {
 	this->courseList.push_back(course);		//TODO: fix bug
+	cout << "Professor Added to Course";
 	return true;
 }
 
@@ -26,9 +27,12 @@ bool Professor::RemoveCourse(UINT courseId) {
 	for (UINT index = 0; index < this->courseList.size(); index++) {
 		if (this->courseList[index]->GetCourseNumber() == courseId) {
 			this->courseList.erase(this->courseList.begin() + index);
+			cout << "Professor Unassigned To Course";
 			return true;
 		}
 	}
+
+	cout << "Error Unassigning Professor To Course";
 	return false;
 }
 

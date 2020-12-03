@@ -31,7 +31,7 @@ public:
 	bool SetSpecialization(char* specialization, UINT specializationLength);
 	bool AddCourse(UINT courseId, const char* courseName, UINT courseNameLength);
 	bool RemoveCourse(UINT courseId);
-	bool CreateRequest(Admin* admin, UINT userId, const char* studentName, char* specialization);
+	bool CreateRequest(Admin* admin, UINT userId, const char* studentName, UINT nameLength, char* request, UINT requestLegnth);
 	
 	// Helpers
 	void Reset();

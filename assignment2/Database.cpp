@@ -112,6 +112,8 @@ bool SystemDatabase::CreateUser(UINT userId, UINT userType, char* name, UINT nam
 			cout << "Error: Unknown user type" << endl;
 			return false;
 	}
+
+	cout << "New Student Enrolled (Created)\n";
 	return true;
 }
 
@@ -120,9 +122,12 @@ bool SystemDatabase::RemoveUser(UINT userId) {
 		if (userDB[index]->GetUserId() == userId) {
 			delete this->userDB[index];
 			this->userDB.erase(this->userDB.begin() + index);
+
+			cout << "Student Graduated (Removed)\n";
 			return true;
 		}
 	}
+	cout << "Error Removing User" << endl;
 	return false;
 }
 
