@@ -1,4 +1,5 @@
 #include "admin.h"
+#include "student.h"
 
 Admin::Admin() {
 	this->Reset();

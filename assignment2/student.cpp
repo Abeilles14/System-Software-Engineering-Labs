@@ -1,4 +1,5 @@
 #include "student.h"
+#include "admin.h"
 
 Student::Student() {
 	this->Reset();
@@ -96,6 +97,7 @@ bool Student::CreateRequest(Admin* admin, UINT userId, const char* studentName, 
 
 	admin->requestList.push_back(newRequest);
 	cout << "Specialization Request Submitted to Admin\n";
+
 	return true;
 }
 

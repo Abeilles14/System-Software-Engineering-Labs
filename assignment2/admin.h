@@ -1,7 +1,8 @@
 #pragma once
 
 #include "user.h"
-#include "student.h"
+
+class Student;
 
 using namespace std;
 
