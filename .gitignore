@@ -46,3 +46,10 @@
 *.opendb
 *.recipe
 
+/assignment2/assignment2/x64/Debug/assignment2.vcxproj.FileListAbsolute.txt
+/assignment2/assignment2/.vs/assignment2/v16/TestStore/0/testlog.manifest
+/assignment2/assignment2/.vs/assignment2/v16/TestStore/0/000.testlog
+/assignment2/assignment2/.vs/assignment2/v16/Solution.VC.db-wal
+/assignment2/assignment2/.vs/assignment2/v16/Solution.VC.db-shm
+/assignment2/assignment2/.vs/assignment2/v16/Browse.VC.db-wal
+/assignment2/assignment2/.vs/assignment2/v16/Browse.VC.db-shm

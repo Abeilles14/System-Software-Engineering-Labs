@@ -22,7 +22,7 @@ public:
 	UINT GetAverageGrade() const;
 
 	// Mutators
-	bool SetSpecializationNumber(UINT specializatinoNumber);
+	bool SetSpecializationNumber(UINT specializationId);
 	bool AddEnrolledCourse(courseBase enrolledCourse);
 	bool SetSpecializationName(char* specializationName, UINT specializationNameLength);
 	bool SetAverageGrade(UINT averageGrade);

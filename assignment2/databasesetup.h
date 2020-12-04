@@ -11,7 +11,7 @@ courseSetup courseInitialization[5]{
 	{CPEN211, "CPEN 211"},
 	{CPEN333, "CPEN 333"},
 	{CPEN412, "CPEN 412"},
-	{CPEN391, "CPEN 391"},
+	{ELEC342, "ELEC 342"},
 	{MATH256, "MATH 256"}
 };
 
@@ -24,7 +24,7 @@ struct specializationSetup {
 
 specializationSetup specInitialization[5]{
 	{CPEN, "CPEN", {{CPEN211, "CPEN 211"}, {CPEN333, "CPEN 333"}}, 85},
-	{ELEC, "ELEC", {{CPEN211, "CPEN 211"}}, 75},
+	{ELEC, "ELEC", {{ELEC342, "ELEC 342"}, {MATH256, "ELEC 342"}}, 75},
 	{ENGPHYS, "ENGPHYS", {{MATH256, "MATH 256"}}, 80},
 	{MECH, "MECH", {{MATH256, "MATH 256"}, {CPEN333, "CPEN 333"}}, 75},
 	{IGEN, "IGEN", {{MATH256, "MATH 256"}}, 60}
@@ -87,22 +87,23 @@ SystemDatabase databaseSetup() {
 	studentPtr->AddGrade(cpen211Grade);
 
 	// Specialization Requirements
-	Specialization* cpenPtr = database.GetSpecializationPtr(CPEN);
-	cpenPtr->AddEnrolledCourse({ CPEN211, "CPEN 211" });
-	cpenPtr->AddEnrolledCourse({ CPEN333, "CPEN 333" });
+	Specialization* specializationPtr = database.GetSpecializationPtr(CPEN);
+	specializationPtr->AddEnrolledCourse({ CPEN211, "CPEN 211" });
+	specializationPtr->AddEnrolledCourse({ CPEN333, "CPEN 333" });
 
-	Specialization* elecPtr = database.GetSpecializationPtr(ELEC);
-	elecPtr->AddEnrolledCourse({ CPEN211, "CPEN 211" });
+	specializationPtr = database.GetSpecializationPtr(ELEC);
+	specializationPtr->AddEnrolledCourse({ ELEC342, "ELEC 342" });
+	specializationPtr->AddEnrolledCourse({ MATH256, "MATH 256" });
 
-	Specialization* engphysPtr = database.GetSpecializationPtr(ENGPHYS);
-	engphysPtr->AddEnrolledCourse({ MATH256, "MATH 256" });
+	specializationPtr = database.GetSpecializationPtr(ENGPHYS);
+	specializationPtr->AddEnrolledCourse({ MATH256, "MATH 256" });
 
-	Specialization* mechPtr = database.GetSpecializationPtr(MECH);
-	mechPtr->AddEnrolledCourse({ MATH256, "MATH 256" });
-	mechPtr->AddEnrolledCourse({ CPEN333, "CPEN 333" });
+	specializationPtr = database.GetSpecializationPtr(MECH);
+	specializationPtr->AddEnrolledCourse({ MATH256, "MATH 256" });
+	specializationPtr->AddEnrolledCourse({ CPEN333, "CPEN 333" });
 
-	Specialization* igenPtr = database.GetSpecializationPtr(IGEN);
-	igenPtr->AddEnrolledCourse({ MATH256, "MATH 256" });
+	specializationPtr = database.GetSpecializationPtr(IGEN);
+	specializationPtr->AddEnrolledCourse({ MATH256, "MATH 256" });
 
 	// Add administrator and President
 

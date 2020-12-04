@@ -472,15 +472,19 @@ int main() {
 										studentPtr = (Student*)userPtr;
 										
 										specializationPtr = universityDatabase.GetSpecializationPtr(adminPtr->GetRequestSpecializationNumber(userInput));
-										if (coursePtr == NULL) {
+										if (specializationPtr == NULL) {
 											break;
 										}
 
 										// approve student request
-										if (adminPtr->checkRequirements(studentPtr, specializationPtr)) {
-											adminPtr->ApproveRequest(studentPtr);
+										if (!adminPtr->CheckRequirements(studentPtr, specializationPtr)) {
+											cout << "Student does not meet pre-reqs\n";
+											break;
+											
 										}
-										
+										cout << "Student specialization updated\n";
+										adminPtr->ApproveRequest(studentPtr);
+
 										break;
 									}
 									case 2: {
@@ -586,7 +590,7 @@ int main() {
 									cin >> userInput;
 
 									specializationPtr = universityDatabase.GetSpecializationPtr(userInput);
-									if (coursePtr == NULL) {
+									if (specializationPtr == NULL) {
 										break;
 									}
 

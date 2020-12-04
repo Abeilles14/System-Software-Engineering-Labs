@@ -21,7 +21,7 @@ public:
 	UINT GetRequestSpecializationNumber(UINT userId) const;
 
 	// Mutators
-	bool checkRequirements(Student* thisStudent, Specialization* specialization);
+	bool CheckRequirements(Student* thisStudent, Specialization* specialization);
 	bool ApproveRequest(Student* student);
 	bool DenyRequest(UINT userId);
 

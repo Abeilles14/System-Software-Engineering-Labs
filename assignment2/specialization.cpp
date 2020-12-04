@@ -36,8 +36,8 @@ const char* Specialization::GetSpecializationName() const {
 }
 
 // Mutators
-bool Specialization::SetSpecializationNumber(UINT specializatinoNumber) {
-	this->specializationNumber = specializationNumber;
+bool Specialization::SetSpecializationNumber(UINT specializationId) {
+	this->specializationNumber = specializationId;
 	return true;
 }
 

@@ -31,25 +31,37 @@ UINT Admin::GetRequestSpecializationNumber(UINT userId) const {
 }
 
 // Mutators
-bool checkRequirements(Student* thisStudent, Specialization* specialization) {
-	int studentGrade = accumulate(thisStudent->GetGradesList()->begin(), thisStudent->GetGradesList()->end(), 0);
+bool Admin::CheckRequirements(Student* thisStudent, Specialization* specialization) {
+	UINT studentGrade = 0; //accumulate(thisStudent->GetGradesList()->begin(), thisStudent->GetGradesList()->end(), 0);
+
+	// Calculate student avg
+	for (UINT index = 0; index < thisStudent->GetGradesList()->size(); index++) {
+		studentGrade += thisStudent->GetGradesList()->at(index).grade;
+	}
+	studentGrade /= thisStudent->GetGradesList()->size();
 
 	// check student average
+	bool found = false;
+
 	if (studentGrade >= specialization->GetAverageGrade()) {
 
 		// check student enrolled classes
-		for (UINT index = 0; index < thisStudent->GetEnrolledCoursesList()->size(); index++) {
-			if (std::find(thisStudent->GetEnrolledCoursesList()->begin(), thisStudent->GetEnrolledCoursesList()->end(), specialization->GetEnrolledCourses()[index]) == specialization->GetEnrolledCourses()->end()) {
-				cout << "Student Does Not Meet Requirements to Enter Specialization\n";
+		for (UINT index = 0; index < specialization->GetEnrolledCourses()->size(); index++) {
+			found = false;
+			for (UINT index2 = 0; index2 < thisStudent->GetEnrolledCoursesList()->size(); index2++) {
+				// Check if student has the course in its list. if it does, break the loop and continue.
+				if (specialization->GetEnrolledCourses()->at(index).courseNumber == thisStudent->GetEnrolledCoursesList()->at(index2).courseNumber) {
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				// Was not able to find the indicated course
 				return false;
 			}
 		}
-		cout << "Student Meets Requirements to Enter Specialization\n";
 		return true;
 	}
-
-	cout << "Student Does Not Meet Requirements to Enter Specialization\n";
-	return false;
 }
 
 bool Admin::ApproveRequest(Student* student) {

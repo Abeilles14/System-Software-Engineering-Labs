@@ -20,6 +20,7 @@ enum courseIdList {
 	CPEN412,
 	CPEN391,
 	MATH256,
+	ELEC342,
 	NONE
 };
 
