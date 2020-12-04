@@ -86,7 +86,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
       <AdditionalLibraryDirectories>Z:\Eng\cpen333\System-Software-Engineering-Labs\assignment2\assignment2\x64\Debug</AdditionalLibraryDirectories>
-      <AdditionalDependencies>student.obj;Database.obj;admin.obj;specialization.obj;course.obj;president.obj;professor.obj;user.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>student.obj;database.obj;admin.obj;specialization.obj;course.obj;president.obj;professor.obj;user.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

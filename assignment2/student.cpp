@@ -13,7 +13,7 @@ Student::Student(UINT userId, char* name, UINT nameLength, char* userName, UINT 
 
 // Accessors
 void Student::DisplayStudentInfo() const {
-	cout << "Name: " << this->GetName() << endl;
+	cout << "\nName: " << this->GetName() << endl;
 	cout << "Specialization: " << this->specialization << endl;
 	cout << "Fees due: " << this->tuitionFees << endl;
 	cout << "Enrolled Courses: " << endl;
