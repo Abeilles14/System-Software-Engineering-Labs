@@ -93,7 +93,7 @@ bool Student::CreateRequest(Admin* admin, UINT userId, const char* studentName, 
 	memset(newRequest.studentName, 0, 20);
 	memset(newRequest.specializationName, 0, 20);
 	memcpy(newRequest.studentName, studentName, nameLength);
-	memcpy(newRequest.studentName, specializationName, specializationNameLength);
+	memcpy(newRequest.specializationName, specializationName, specializationNameLength);
 
 	for (UINT index = 0; index < admin->requestList.size(); index++) {
 		if (admin->requestList[index].studentNumber == userId) {

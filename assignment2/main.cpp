@@ -439,7 +439,7 @@ int main() {
 									cin >> userInput;
 
 									// display student information
-									cout << "Sisplaying Student Info";
+									cout << "Displaying Student Info";
 									userPtr = universityDatabase.GetUserPtr(userInput);
 									if (userPtr == NULL) {
 										break;

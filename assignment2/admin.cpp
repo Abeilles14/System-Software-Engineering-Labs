@@ -32,7 +32,7 @@ UINT Admin::GetRequestSpecializationNumber(UINT userId) const {
 
 // Mutators
 bool Admin::CheckRequirements(Student* thisStudent, Specialization* specialization) {
-	UINT studentGrade = 0; //accumulate(thisStudent->GetGradesList()->begin(), thisStudent->GetGradesList()->end(), 0);
+	UINT studentGrade = 0; 
 
 	// Calculate student avg
 	for (UINT index = 0; index < thisStudent->GetGradesList()->size(); index++) {
