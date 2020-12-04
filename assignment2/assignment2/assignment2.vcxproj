@@ -129,7 +129,6 @@
     <ClCompile Include="..\main.cpp" />
     <ClCompile Include="..\president.cpp" />
     <ClCompile Include="..\professor.cpp" />
-    <ClCompile Include="..\rt.cpp" />
     <ClCompile Include="..\specialization.cpp" />
     <ClCompile Include="..\student.cpp" />
     <ClCompile Include="..\user.cpp" />
@@ -142,7 +141,6 @@
     <ClInclude Include="..\databasesetup.h" />
     <ClInclude Include="..\president.h" />
     <ClInclude Include="..\professor.h" />
-    <ClInclude Include="..\rt.h" />
     <ClInclude Include="..\specialization.h" />
     <ClInclude Include="..\student.h" />
     <ClInclude Include="..\user.h" />
