@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<GtaTestDurations xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Executable>Z:\Eng\cpen333\System-Software-Engineering-Labs\assignment2\assignment2\x64\Debug\UniversityTests.exe</Executable>
-  <TestDurations>
-    <TestDuration Test="TestCaseName.TestName" Duration="1" />
-  </TestDurations>
-</GtaTestDurations>
